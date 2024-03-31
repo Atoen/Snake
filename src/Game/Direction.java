@@ -1,3 +1,5 @@
+package Game;
+
 public enum Direction {
     Up,
     Down,
