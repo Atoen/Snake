@@ -9,7 +9,6 @@ import java.util.List;
 public class Player {
     private final int _size;
 
-    public Point pos;
     public Direction direction;
 
     public Color headColor = Color.orange;
@@ -17,13 +16,18 @@ public class Player {
 
     private final List<SnakePart> _parts = new ArrayList<>();
 
+    public final SnakePart head;
+
     Player(Point point, int size) {
         _size = size;
-
-        pos = new Point(point);
         direction = Direction.Up;
 
-        _parts.add(new SnakeHead(point));
+        head = new SnakePart(point);
+        _parts.add(head);
+    }
+
+    public Point GetHeadPosition() {
+        return _parts.getFirst().position;
     }
 
     public void draw(Graphics g) {
@@ -63,12 +67,20 @@ public class Player {
         }
     }
 
+    public boolean isColliding(Point point) {
+        for (var part : _parts) {
+            if (part.isColliding(point)) return true;
+        }
+
+        return false;
+    }
+
     public void grow() {
         var tail = _parts.getLast();
         var newPosition = new Point(tail.position);
         var newDirection = tail.direction;
 
-        var newBody = new SnakeBody(newPosition);
+        var newBody = new SnakePart(newPosition);
         newBody.direction = newDirection;
 
         _parts.add(newBody);
