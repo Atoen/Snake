@@ -1,6 +1,7 @@
 package Game;
 
 import Entities.Apple;
+import Entities.Entity;
 import Entities.Rock;
 
 import javax.swing.*;
@@ -16,8 +17,10 @@ public class GamePanel extends JPanel implements ActionListener {
     private final Grid _grid;
     private final Timer _timer;
     private final RandomPointGenerator _pointGenerator;
+    private final ArrayList<Entity> _entities = new ArrayList<>();
     private final ArrayList<Apple> _apples = new ArrayList<>();
     private final ArrayList<Rock> _rocks = new ArrayList<>();
+    private final ScoreUpdater _updater;
 
     private Player _player;
 
@@ -30,12 +33,16 @@ public class GamePanel extends JPanel implements ActionListener {
     private boolean _gameRunning = true;
 
     private Direction _inputDirection = Direction.Up;
+    private int _score;
+    private final Point _center;
 
-    public GamePanel() {
+    public GamePanel(ScoreUpdater updater) {
+        _updater = updater;
 
         _grid = new Grid(PanelWidth / CellSize, PanelHeight / CellSize);
         _pointGenerator = new RandomPointGenerator(_grid.getWidth(), _grid.getHeight());
-        _player = new Player(new Point(_grid.getWidth() / 2, _grid.getHeight() / 2), CellSize);
+
+        _center = new Point(_grid.getWidth() / 2, _grid.getHeight() / 2);
 
         _timer = new Timer(TimerDelay, this);
         _timer.start();
@@ -45,11 +52,7 @@ public class GamePanel extends JPanel implements ActionListener {
         setFocusable(true);
         addKeyListener(new KeyListener());
 
-        setObstacles();
-
-        spawnApple();
-        spawnApple();
-        spawnApple();
+        resetGame();
     }
 
     @Override
@@ -69,47 +72,62 @@ public class GamePanel extends JPanel implements ActionListener {
         _player.draw(g);
     }
 
-    private void resetPlayer() {
-        _player = new Player(new Point(_grid.getWidth() / 2, _grid.getHeight() / 2), CellSize);
+    private void resetGame() {
+        _rocks.clear();
+        _apples.clear();
+
+        _player = new Player(_center, 3, CellSize);
+
+        setObstacles(50, 5);
+        spawnApples(3);
     }
 
-    private void setObstacles() {
-        for (var i = 0; i < 20; i++) {
-            var point = _pointGenerator.pickRandomPoint();
-            _rocks.add(new Rock(point));
+    private void setObstacles(int amount, int clearAreaRadius) {
+        final var clearArea = new Rectangle(_center.x - clearAreaRadius, _center.y - clearAreaRadius, clearAreaRadius * 2, clearAreaRadius * 2);
+        _pointGenerator.pickRandomPointsExcept(amount, clearArea)
+                .forEach(x -> {
+                    final var rock = new Rock(x);
+                    _entities.add(rock);
+                    _rocks.add(rock);
+                });
+    }
+
+    private void spawnApples(int number) {
+        for (var i = 0; i < number; i++) {
+            spawnApple();
         }
     }
 
     private void spawnApple() {
-        var attempt = 0;
+        Point position;
+        do  {
+           position = _pointGenerator.pickRandomPointExcept(_entities);
+        } while (_player.isColliding(position));
 
-        while (attempt++ < 100) {
-            var point = _pointGenerator.pickRandomPoint();
-            if (!_player.isColliding(point)) {
-                _apples.add(new Apple(point));
-                return;
-            }
-        }
+        var apple = new Apple(position);
+
+        _apples.add(apple);
+        _entities.add(apple);
     }
 
     private boolean CheckCollisions() {
         final var position = _player.GetHeadPosition();
-        final var nextPosition = _inputDirection.move(position);
+        final var nextPosition = _inputDirection.translate(position);
 
         if (nextPosition.x < 0 || nextPosition.x >= _grid.getWidth() ||
             nextPosition.y < 0 || nextPosition.y >= _grid.getHeight()) {
-            resetPlayer();
+            resetGame();
             return true;
         }
 
         if (_player.isColliding(nextPosition)) {
-            resetPlayer();
+            resetGame();
             return true;
         }
 
         for (var rock : _rocks) {
             if (_player.head.isColliding(rock)) {
-                resetPlayer();
+                resetGame();
                 return true;
             }
         }
@@ -122,8 +140,13 @@ public class GamePanel extends JPanel implements ActionListener {
         }
 
         if (appleEaten.isPresent()) {
+            _score += 100;
+            _updater.updateScore(_score);
+
             _apples.remove(appleEaten.get());
+            _entities.remove(appleEaten.get());
             _player.grow();
+
             spawnApple();
         }
 
