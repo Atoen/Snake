@@ -24,11 +24,11 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private Player _player;
 
-    private static final int TimerDelay = 200;
+    private static final int TimerDelay = 500;
 
     private static final int PanelWidth = 800;
     private static final int PanelHeight = 450;
-    private static final int CellSize = 10;
+    private static final int CellSize = 24;
 
     private boolean _gameRunning = true;
 
@@ -83,10 +83,10 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private void setObstacles(int amount, int clearAreaRadius) {
-        final var clearArea = new Rectangle(_center.x - clearAreaRadius, _center.y - clearAreaRadius, clearAreaRadius * 2, clearAreaRadius * 2);
+        var clearArea = new Rectangle(_center.x - clearAreaRadius, _center.y - clearAreaRadius, clearAreaRadius * 2, clearAreaRadius * 2);
         _pointGenerator.pickRandomPointsExcept(amount, clearArea)
                 .forEach(x -> {
-                    final var rock = new Rock(x);
+                    var rock = new Rock(x);
                     _entities.add(rock);
                     _rocks.add(rock);
                 });
@@ -111,8 +111,8 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     private boolean CheckCollisions() {
-        final var position = _player.GetHeadPosition();
-        final var nextPosition = _inputDirection.translate(position);
+        var position = _player.GetHeadPosition();
+        var nextPosition = _inputDirection.translate(position);
 
         if (nextPosition.x < 0 || nextPosition.x >= _grid.getWidth() ||
             nextPosition.y < 0 || nextPosition.y >= _grid.getHeight()) {
@@ -169,7 +169,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private class KeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            final var code = e.getKeyCode();
+            var code = e.getKeyCode();
             switch (code) {
                 case KeyEvent.VK_LEFT -> {
                     if (_player.direction != Direction.Right)
@@ -187,6 +187,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     if (_player.direction != Direction.Up)
                         _inputDirection = Direction.Down;
                 }
+                case KeyEvent.VK_SPACE -> _gameRunning = !_gameRunning;
                 default -> System.out.println(STR."Unhandled key code: \{code}");
             }
         }

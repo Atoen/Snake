@@ -21,14 +21,14 @@ public class RandomPointGenerator {
     }
 
     public Point pickRandomPoint() {
-        final var x = _random.nextInt(_maxX);
-        final var y = _random.nextInt(_maxY);
+        var x = _random.nextInt(_maxX);
+        var y = _random.nextInt(_maxY);
 
         return new Point(x, y);
     }
 
     public Point pickRandomPointExcept(Rectangle rectangle) {
-        final var point = new Point();
+        var point = new Point();
         do {
             point.x = _random.nextInt(_maxX);
             point.y = _random.nextInt(_maxY);
@@ -42,7 +42,7 @@ public class RandomPointGenerator {
     }
 
     public Point pickRandomPointExcept(List<Entity> existingEntities) {
-        final var point = new Point();
+        var point = new Point();
         var collides = false;
 
         do {
@@ -56,13 +56,13 @@ public class RandomPointGenerator {
     }
 
     public List<Point> pickRandomPointsExcept(int numberOfPoints, Rectangle rectangle) {
-        final var points = new ArrayList<Point>();
+        var points = new ArrayList<Point>();
 
         for (var i = 0; i < numberOfPoints; i++) {
             var attempt = 0;
             var valid = true;
 
-            final var point = new Point();
+            var point = new Point();
             do {
                 if (attempt++ > MaxAttemptsPerPoint) {
                     valid = false;
