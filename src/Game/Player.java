@@ -1,6 +1,6 @@
 package Game;
 
-import Entities.*;
+import Entities.SnakePart;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +24,7 @@ public class Player {
     public final SnakePart head;
 
 
-    Player(Point point, int initialLength, int spriteSize) {
+    public Player(Point point, int initialLength, int spriteSize) {
         _initiallength = initialLength;
 
         _head0Sprite = new ImageIcon("src/sprites/head0.png").getImage();

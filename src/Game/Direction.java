@@ -1,6 +1,6 @@
 package Game;
 
-import java.awt.*;
+import java.awt.Point;
 
 public enum Direction {
     Up,
@@ -18,7 +18,7 @@ public enum Direction {
         };
     }
 
-    public float GetDegrees() {
+    public float getDegrees() {
         return switch (this) {
             case Up -> 0;
             case Down -> 180;
@@ -28,6 +28,6 @@ public enum Direction {
     }
 
     public double getRadians() {
-        return Math.toRadians(GetDegrees());
+        return Math.toRadians(getDegrees());
     }
 }

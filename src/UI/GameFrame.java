@@ -1,8 +1,9 @@
-package Game;
+package UI;
+
+import Game.ScoreUpdater;
 
 import javax.swing.*;
 import java.awt.*;
-
 
 public class GameFrame extends JFrame implements ScoreUpdater {
     private final JLabel _scoreValueLabel;

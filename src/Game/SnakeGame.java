@@ -4,18 +4,18 @@ import Entities.Apple;
 import Entities.Entity;
 import Entities.Rock;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Optional;
 
-public class GamePanel extends JPanel implements ActionListener {
+import static UI.GamePanel.CellSize;
+
+public class SnakeGame {
+
     private final Grid _grid;
-    private final Timer _timer;
+    private final Point _center;
+
     private final RandomPointGenerator _pointGenerator;
     private final ArrayList<Entity> _entities = new ArrayList<>();
     private final ArrayList<Apple> _apples = new ArrayList<>();
@@ -23,42 +23,23 @@ public class GamePanel extends JPanel implements ActionListener {
     private final ScoreUpdater _updater;
 
     private Player _player;
-
-    private static final int TimerDelay = 500;
-
-    private static final int PanelWidth = 800;
-    private static final int PanelHeight = 450;
-    private static final int CellSize = 24;
-
-    private boolean _gameRunning = true;
-
     private Direction _inputDirection = Direction.Up;
-    private int _score;
-    private final Point _center;
 
-    public GamePanel(ScoreUpdater updater) {
+    public final KeyListener keyListener = new KeyListener();
+    public boolean running = true;
+    private int _score;
+
+
+    public SnakeGame(ScoreUpdater updater, int gridWidth, int gridHeight) {
         _updater = updater;
 
-        _grid = new Grid(PanelWidth / CellSize, PanelHeight / CellSize);
+        _grid = new Grid(gridWidth, gridHeight);
         _pointGenerator = new RandomPointGenerator(_grid.getWidth(), _grid.getHeight());
 
         _center = new Point(_grid.getWidth() / 2, _grid.getHeight() / 2);
-
-        _timer = new Timer(TimerDelay, this);
-        _timer.start();
-
-        setPreferredSize(new Dimension(PanelWidth, PanelHeight));
-        setBackground(Color.black);
-        setFocusable(true);
-        addKeyListener(new KeyListener());
-
-        resetGame();
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
+    public void draw(Graphics g) {
         g.setColor(Color.red);
         for (var apple : _apples) {
             g.fillRect(apple.position.x * CellSize, apple.position.y * CellSize, CellSize, CellSize);
@@ -72,14 +53,20 @@ public class GamePanel extends JPanel implements ActionListener {
         _player.draw(g);
     }
 
-    private void resetGame() {
+    public void reset() {
         _rocks.clear();
         _apples.clear();
 
-        _player = new Player(_center, 3, CellSize);
+        _player = new Player(_center, 5, CellSize);
 
         setObstacles(50, 5);
         spawnApples(3);
+    }
+
+    public void tick() {
+        if (!checkCollisions(_inputDirection)) {
+            _player.Move(_inputDirection);
+        }
     }
 
     private void setObstacles(int amount, int clearAreaRadius) {
@@ -101,7 +88,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private void spawnApple() {
         Point position;
         do  {
-           position = _pointGenerator.pickRandomPointExcept(_entities);
+            position = _pointGenerator.pickRandomPointExcept(_entities);
         } while (_player.isColliding(position));
 
         var apple = new Apple(position);
@@ -110,41 +97,41 @@ public class GamePanel extends JPanel implements ActionListener {
         _entities.add(apple);
     }
 
-    private boolean CheckCollisions() {
+    public boolean checkCollisions(Direction inputDirection) {
         var position = _player.GetHeadPosition();
-        var nextPosition = _inputDirection.translate(position);
+        var nextPosition = inputDirection.translate(position);
 
-        if (nextPosition.x < 0 || nextPosition.x >= _grid.getWidth() ||
-            nextPosition.y < 0 || nextPosition.y >= _grid.getHeight()) {
-            resetGame();
+        if (nextPosition.x < 0 || nextPosition.x > _grid.getWidth() ||
+                nextPosition.y < 0 || nextPosition.y > _grid.getHeight()) {
+            reset();
             return true;
         }
 
         if (_player.isColliding(nextPosition)) {
-            resetGame();
+            reset();
             return true;
         }
 
         for (var rock : _rocks) {
-            if (_player.head.isColliding(rock)) {
-                resetGame();
+            if (rock.isColliding(nextPosition)) {
+                reset();
                 return true;
             }
         }
 
-        Optional<Apple> appleEaten = Optional.empty();
+        Apple appleEaten = null;
         for (var apple : _apples) {
-            if (_player.head.isColliding(apple)) {
-                appleEaten = Optional.of(apple);
+            if (apple.isColliding(nextPosition)) {
+                appleEaten = apple;
             }
         }
 
-        if (appleEaten.isPresent()) {
+        if (appleEaten != null) {
             _score += 100;
             _updater.updateScore(_score);
 
-            _apples.remove(appleEaten.get());
-            _entities.remove(appleEaten.get());
+            _apples.remove(appleEaten);
+            _entities.remove(appleEaten);
             _player.grow();
 
             spawnApple();
@@ -153,20 +140,7 @@ public class GamePanel extends JPanel implements ActionListener {
         return false;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if (!_gameRunning) {
-            _timer.stop();
-        }
-
-        if (!CheckCollisions()) {
-            _player.Move(_inputDirection);
-        }
-
-        repaint();
-    }
-
-    private class KeyListener extends KeyAdapter {
+    public class KeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             var code = e.getKeyCode();
@@ -187,10 +161,7 @@ public class GamePanel extends JPanel implements ActionListener {
                     if (_player.direction != Direction.Up)
                         _inputDirection = Direction.Down;
                 }
-                case KeyEvent.VK_SPACE -> _gameRunning = !_gameRunning;
-                default -> System.out.println(STR."Unhandled key code: \{code}");
             }
         }
     }
 }
-
