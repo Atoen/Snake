@@ -1,7 +1,12 @@
 package sprites;
 
+import Game.Direction;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.Random;
+
+import static UI.GamePanel.CellSize;
 
 public class SpriteManager {
 
@@ -15,6 +20,8 @@ public class SpriteManager {
     private static Image[] _fruitSprites;
 
     private static Image _frogSprite;
+
+    private static final Random _random = new Random();
 
     public static Image getPlayerBodySprite() {
         if (_playerBodySprite != null) {
@@ -62,6 +69,7 @@ public class SpriteManager {
         _playerBodyTurnSprites[1] = loadImage("src/sprites/bodyturn2.png");
         _playerBodyTurnSprites[2] = loadImage("src/sprites/bodyturn3.png");
         _playerBodyTurnSprites[3] = loadImage("src/sprites/bodyturn4.png");
+
         return _playerBodyTurnSprites;
     }
 
@@ -79,7 +87,19 @@ public class SpriteManager {
             return _fruitSprites;
         }
 
+        _fruitSprites = new Image[4];
+        _fruitSprites[0] = loadImage("src/sprites/apple.png");
+        _fruitSprites[1] = loadImage("src/sprites/banana.png");
+        _fruitSprites[2] = loadImage("src/sprites/melon.png");
+        _fruitSprites[3] = loadImage("src/sprites/pear.png");
+
         return _fruitSprites;
+    }
+
+    public static Image getRandomFruitSprite() {
+        var sprites = getFruitSprites();
+        var index = _random.nextInt(sprites.length);
+        return sprites[index];
     }
 
     public static Image getFrogSprite() {
@@ -89,6 +109,24 @@ public class SpriteManager {
 
         _frogSprite = loadImage("src/sprites/frog.png");
         return _frogSprite;
+    }
+
+    public static void DrawSprite(Graphics g, Image sprite, Point position) {
+        DrawSprite(g, sprite, position, Direction.Up);
+    }
+
+    public static void DrawSprite(Graphics g, Image sprite, Point position, Direction direction) {
+        var g2d = (Graphics2D) g;
+        var startingTransform = g2d.getTransform();
+
+        var centerX = position.x * CellSize +  CellSize / 2;
+        var centerY = position.y *  CellSize +  CellSize / 2;
+
+        g2d.translate(centerX, centerY);
+        g2d.rotate(direction.getRadians());
+
+        g2d.drawImage(sprite, - CellSize / 2, - CellSize / 2,  CellSize,  CellSize, null);
+        g2d.setTransform(startingTransform);
     }
 
     private static Image loadImage(String path) {

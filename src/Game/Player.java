@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    private final int _spriteSize;
-    private final int _initiallength;
+    private final int _initialLength;
 
     public Direction direction;
 
@@ -18,10 +17,8 @@ public class Player {
     public final SnakePart head;
 
 
-    public Player(Point point, int initialLength, int spriteSize) {
-        _initiallength = initialLength;
-
-        _spriteSize = spriteSize;
+    public Player(Point point, int initialLength) {
+        _initialLength = initialLength;
         direction = Direction.Up;
 
         head = new SnakePart(point);
@@ -36,55 +33,42 @@ public class Player {
     public void draw(Graphics g) {
         var head = parts.getFirst();
         if (parts.size() == 1) {
-            DrawImageRotated(g, SpriteManager.getPlayerHead0Sprite(), head.position, head.direction);
+            SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead0Sprite(), head.position, head.direction);
             return;
         }
 
-        DrawImageRotated(g, SpriteManager.getPlayerHead1Sprite(), head.position, head.direction);
+        SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead1Sprite(), head.position, head.direction);
+
 
         for (int i = 1; i < parts.size() - 1; i++) {
             var part = parts.get(i);
             var nextDirection = parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
-                DrawImageRotated(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
+                SpriteManager.DrawSprite(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
             } else {
-                DrawImageRotated(g, getTurnImage(part.direction, nextDirection), part.position, Direction.Down);
+                SpriteManager.DrawSprite(g, getTurnImage(part.direction, nextDirection), part.position);
             }
         }
 
         var tail = parts.getLast();
-        DrawImageRotated(g, SpriteManager.getPlayerTailSprite(), tail.position, tail.direction);
+        SpriteManager.DrawSprite(g, SpriteManager.getPlayerTailSprite(), tail.position, tail.direction);
     }
 
     private Image getTurnImage(Direction current, Direction next) {
         var sprites = SpriteManager.getPlayerBodyTurnSprites();
         return switch (current) {
-            case Up -> next == Direction.Left ? sprites[0] : sprites[3];
-            case Down -> next == Direction.Left ? sprites[1] : sprites[2];
-            case Left -> next == Direction.Down ? sprites[3] : sprites[2];
-            case Right -> next == Direction.Down ? sprites[0] : sprites[1];
+            case Up -> next == Direction.Left ? sprites[2] : sprites[1];
+            case Down -> next == Direction.Left ? sprites[3] : sprites[0];
+            case Left -> next == Direction.Down ? sprites[1] : sprites[0];
+            case Right -> next == Direction.Down ? sprites[2] : sprites[3];
         };
-    }
-
-    private void DrawImageRotated(Graphics g, Image image, Point position, Direction direction) {
-        var g2d = (Graphics2D) g;
-        var startingTransform = g2d.getTransform();
-
-        var centerX = position.x * _spriteSize + _spriteSize / 2;
-        var centerY = position.y * _spriteSize + _spriteSize / 2;
-
-        g2d.translate(centerX, centerY);
-        g2d.rotate(direction.getRadians());
-
-        g2d.drawImage(image, -_spriteSize / 2, -_spriteSize / 2, _spriteSize, _spriteSize, null);
-        g2d.setTransform(startingTransform);
     }
 
     public void Move(Direction direction) {
         this.direction = direction;
         head.direction = direction;
 
-        if (parts.size() < _initiallength) {
+        if (parts.size() < _initialLength) {
             grow();
         }
 

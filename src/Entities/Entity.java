@@ -1,5 +1,7 @@
 package Entities;
 
+import sprites.SpriteManager;
+
 import java.awt.*;
 
 import static UI.GamePanel.CellSize;
@@ -26,12 +28,7 @@ public abstract class Entity {
     public void Draw(Graphics g) {
         var sprite = getSprite();
         if (sprite != null) {
-            var g2d = (Graphics2D) g;
-            var centerX = position.x * CellSize + CellSize / 2;
-            var centerY = position.y * CellSize + CellSize / 2;
-
-            g2d.translate(centerX, centerY);
-            g2d.drawImage(sprite, -CellSize / 2, -CellSize / 2, CellSize, CellSize, null);
+            SpriteManager.DrawSprite(g, sprite, position);
         } else {
             g.setColor(getColor());
             g.fillRect(position.x * CellSize, position.y * CellSize, CellSize, CellSize);

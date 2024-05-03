@@ -1,6 +1,6 @@
 package Game;
 
-import Entities.Apple;
+import Entities.Fruit;
 import Entities.Entity;
 import Entities.Rock;
 import Entities.ScoreEntity;
@@ -9,8 +9,6 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-
-import static UI.GamePanel.CellSize;
 
 public class SnakeGame {
 
@@ -49,10 +47,10 @@ public class SnakeGame {
 
     public void reset() {
         _entities.clear();
-        _player = new Player(_center, 5, CellSize);
+        _player = new Player(_center, 5);
 
         setObstacles(50, 5);
-        spawnApples(3);
+        spawnFruits(3);
     }
 
     public void tick() {
@@ -70,7 +68,7 @@ public class SnakeGame {
                 });
     }
 
-    private void spawnApples(int number) {
+    private void spawnFruits(int number) {
         for (var i = 0; i < number; i++) {
             spawnApple();
         }
@@ -82,7 +80,7 @@ public class SnakeGame {
             position = _pointGenerator.pickRandomPointExcept(_entities);
         } while (_player.isColliding(position));
 
-        var apple = new Apple(position);
+        var apple = new Fruit(position);
         _entities.add(apple);
     }
 
@@ -120,7 +118,7 @@ public class SnakeGame {
 
         _entities.removeAll(entitiesToRemove);
         entitiesToRemove.forEach(x -> {
-            if (x instanceof Apple) spawnApple();
+            if (x instanceof Fruit) spawnApple();
         });
 
         return false;
