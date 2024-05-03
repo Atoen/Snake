@@ -29,8 +29,6 @@ public class GamePanel extends JPanel implements ActionListener {
         setBackground(Color.black);
         setFocusable(true);
         addKeyListener(_game.keyListener);
-
-        _game.reset();
     }
 
     @Override

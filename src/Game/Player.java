@@ -1,20 +1,14 @@
 package Game;
 
 import Entities.SnakePart;
+import sprites.SpriteManager;
 
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
     private final int _spriteSize;
-    private final Image _bodySprite;
-    private final Image _tailSprite;
-    private final Image _head1Sprite;
-    private final Image _head0Sprite;
-
-    private final Image[] _turnSprites;
     private final int _initiallength;
 
     public Direction direction;
@@ -26,17 +20,6 @@ public class Player {
 
     public Player(Point point, int initialLength, int spriteSize) {
         _initiallength = initialLength;
-
-        _head0Sprite = new ImageIcon("src/sprites/head0.png").getImage();
-        _head1Sprite = new ImageIcon("src/sprites/head1.png").getImage();
-        _tailSprite = new ImageIcon("src/sprites/tail.png").getImage();
-        _bodySprite = new ImageIcon("src/sprites/body.png").getImage();
-
-        _turnSprites = new Image[4];
-        _turnSprites[0] = new ImageIcon("src/sprites/bodyturn1.png").getImage();
-        _turnSprites[1] = new ImageIcon("src/sprites/bodyturn2.png").getImage();
-        _turnSprites[2] = new ImageIcon("src/sprites/bodyturn3.png").getImage();
-        _turnSprites[3] = new ImageIcon("src/sprites/bodyturn4.png").getImage();
 
         _spriteSize = spriteSize;
         direction = Direction.Up;
@@ -53,32 +36,33 @@ public class Player {
     public void draw(Graphics g) {
         var head = parts.getFirst();
         if (parts.size() == 1) {
-            DrawImageRotated(g, _head0Sprite, head.position, head.direction);
+            DrawImageRotated(g, SpriteManager.getPlayerHead0Sprite(), head.position, head.direction);
             return;
         }
 
-        DrawImageRotated(g, _head1Sprite, head.position, head.direction);
+        DrawImageRotated(g, SpriteManager.getPlayerHead1Sprite(), head.position, head.direction);
 
         for (int i = 1; i < parts.size() - 1; i++) {
             var part = parts.get(i);
             var nextDirection = parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
-                DrawImageRotated(g, _bodySprite, part.position, part.direction);
+                DrawImageRotated(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
             } else {
                 DrawImageRotated(g, getTurnImage(part.direction, nextDirection), part.position, Direction.Down);
             }
         }
 
         var tail = parts.getLast();
-        DrawImageRotated(g, _tailSprite, tail.position, tail.direction);
+        DrawImageRotated(g, SpriteManager.getPlayerTailSprite(), tail.position, tail.direction);
     }
 
     private Image getTurnImage(Direction current, Direction next) {
+        var sprites = SpriteManager.getPlayerBodyTurnSprites();
         return switch (current) {
-            case Up -> next == Direction.Left ? _turnSprites[0] : _turnSprites[3];
-            case Down -> next == Direction.Left ? _turnSprites[1] : _turnSprites[2];
-            case Left -> next == Direction.Down ? _turnSprites[3] : _turnSprites[2];
-            case Right -> next == Direction.Down ? _turnSprites[0] : _turnSprites[1];
+            case Up -> next == Direction.Left ? sprites[0] : sprites[3];
+            case Down -> next == Direction.Left ? sprites[1] : sprites[2];
+            case Left -> next == Direction.Down ? sprites[3] : sprites[2];
+            case Right -> next == Direction.Down ? sprites[0] : sprites[1];
         };
     }
 

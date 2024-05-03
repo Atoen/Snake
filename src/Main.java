@@ -1,7 +1,7 @@
 import UI.GameFrame;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main() {
         var game = new GameFrame();
     }
 }
