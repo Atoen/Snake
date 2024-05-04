@@ -78,8 +78,18 @@ public class SpriteManager {
             return _rockSprites;
         }
 
+        _rockSprites = new Image[3];
+        _rockSprites[0] = loadImage("src/sprites/rock1.png");
+        _rockSprites[1] = loadImage("src/sprites/rock2.png");
+        _rockSprites[2] = loadImage("src/sprites/rock3.png");
 
         return _rockSprites;
+    }
+
+    public static Image getRandomRockSprite() {
+        var sprites = getRockSprites();
+        var index = _random.nextInt(sprites.length);
+        return sprites[index];
     }
 
     public static Image[] getFruitSprites() {

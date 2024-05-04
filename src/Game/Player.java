@@ -39,7 +39,6 @@ public class Player {
 
         SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead1Sprite(), head.position, head.direction);
 
-
         for (int i = 1; i < parts.size() - 1; i++) {
             var part = parts.get(i);
             var nextDirection = parts.get(i + 1).direction;

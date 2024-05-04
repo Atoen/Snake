@@ -1,14 +1,20 @@
 package Entities;
 
+import sprites.SpriteManager;
+
 import java.awt.*;
 
 public class Rock extends Entity {
+
+    private final Image _sprite;
+
     public Rock(Point point) {
         super(point);
+        _sprite = SpriteManager.getRandomRockSprite();
     }
 
     @Override
-    public Color getColor() {
-        return Color.gray;
+    public Image getSprite() {
+        return _sprite;
     }
 }
