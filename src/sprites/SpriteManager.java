@@ -129,13 +129,13 @@ public class SpriteManager {
         var g2d = (Graphics2D) g;
         var startingTransform = g2d.getTransform();
 
-        var centerX = position.x * CellSize +  CellSize / 2;
-        var centerY = position.y *  CellSize +  CellSize / 2;
+        var centerX = position.x * CellSize + CellSize / 2;
+        var centerY = position.y * CellSize + CellSize / 2;
 
         g2d.translate(centerX, centerY);
         g2d.rotate(direction.getRadians());
 
-        g2d.drawImage(sprite, - CellSize / 2, - CellSize / 2,  CellSize,  CellSize, null);
+        g2d.drawImage(sprite, - CellSize / 2, - CellSize / 2, CellSize, CellSize, null);
         g2d.setTransform(startingTransform);
     }
 

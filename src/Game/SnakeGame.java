@@ -1,9 +1,6 @@
 package Game;
 
-import Entities.Fruit;
-import Entities.Entity;
-import Entities.Rock;
-import Entities.ScoreEntity;
+import Entities.*;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -47,10 +44,11 @@ public class SnakeGame {
 
     public void reset() {
         _entities.clear();
-        _player = new Player(_center, 5);
+        _player = new Player(_center, 1);
 
-        setObstacles(50, 5);
+        setObstacles(20, 5);
         spawnFruits(3);
+        spawnFrog();
     }
 
     public void tick() {
@@ -70,11 +68,11 @@ public class SnakeGame {
 
     private void spawnFruits(int number) {
         for (var i = 0; i < number; i++) {
-            spawnApple();
+            spawnFruit();
         }
     }
 
-    private void spawnApple() {
+    private void spawnFruit() {
         Point position;
         do  {
             position = _pointGenerator.pickRandomPointExcept(_entities);
@@ -82,6 +80,16 @@ public class SnakeGame {
 
         var apple = new Fruit(position);
         _entities.add(apple);
+    }
+
+    private void spawnFrog() {
+        Point position;
+        do  {
+            position = _pointGenerator.pickRandomPointExcept(_entities);
+        } while (_player.isColliding(position));
+
+        var frog = new Frog(position);
+        _entities.add(frog);
     }
 
     public boolean checkCollisions(Direction inputDirection) {
@@ -108,7 +116,7 @@ public class SnakeGame {
                     _updater.updateScore(_score);
 
                     entitiesToRemove.add(entity);
-                    _player.grow();
+                    _player.grow(scoreEntity.getGrowLength());
                 } else {
                     reset();
                     return true;
@@ -118,7 +126,7 @@ public class SnakeGame {
 
         _entities.removeAll(entitiesToRemove);
         entitiesToRemove.forEach(x -> {
-            if (x instanceof Fruit) spawnApple();
+            if (x instanceof Fruit) spawnFruit();
         });
 
         return false;

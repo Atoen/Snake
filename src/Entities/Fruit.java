@@ -19,6 +19,11 @@ public class Fruit extends Entity implements ScoreEntity {
     }
 
     @Override
+    public int getGrowLength() {
+        return 1;
+    }
+
+    @Override
     public Image getSprite() {
         return _sprite;
     }

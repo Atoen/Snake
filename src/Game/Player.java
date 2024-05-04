@@ -8,17 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    private final int _initialLength;
-
-    public Direction direction;
 
     public final List<SnakePart> parts = new ArrayList<>();
-
     public final SnakePart head;
 
+    public Direction direction;
+    private int _targetLength;
 
     public Player(Point point, int initialLength) {
-        _initialLength = initialLength;
+        _targetLength = initialLength;
         direction = Direction.Up;
 
         head = new SnakePart(point);
@@ -67,7 +65,7 @@ public class Player {
         this.direction = direction;
         head.direction = direction;
 
-        if (parts.size() < _initialLength) {
+        if (parts.size() < _targetLength) {
             grow();
         }
 
@@ -96,7 +94,11 @@ public class Player {
         return false;
     }
 
-    public void grow() {
+    public void grow(int length) {
+        _targetLength += length;
+    }
+
+    private void grow() {
         var tail = parts.getLast();
         var newPosition = new Point(tail.position);
         var newDirection = tail.direction;
