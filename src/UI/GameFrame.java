@@ -1,6 +1,7 @@
 package UI;
 
 import Game.ScoreUpdater;
+import Utils.Score;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,7 +53,15 @@ public class GameFrame extends JFrame implements ScoreUpdater {
         _scoreValueLabel.setText(Integer.toString(score));
     }
 
-    public void updateHighScore(int highScore) {
-        _highScoreValueLabel.setText(Integer.toString(highScore));
+    public void saveScore(int score) {
+        Score.saveHighScore(score);
+    }
+
+    public void onGameReset() {
+        updateHighScore();
+    }
+
+    public void updateHighScore() {
+        _highScoreValueLabel.setText(Integer.toString(Score.readHighScore()));
     }
 }

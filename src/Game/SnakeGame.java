@@ -49,6 +49,12 @@ public class SnakeGame {
         setObstacles(20, 5);
         spawnFruits(3);
         spawnFrog();
+
+        _updater.saveScore(_score);
+        _score = 0;
+        _updater.updateScore(_score);
+
+        _updater.onGameReset();
     }
 
     public void tick() {
