@@ -1,7 +1,7 @@
-import UI.GameFrame;
+import UI.MainFrame;
 
 public class Main {
     public static void main() {
-        var game = new GameFrame();
+        var game = new MainFrame();
     }
 }

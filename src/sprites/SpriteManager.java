@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
 
-import static UI.GamePanel.CellSize;
+import static UI.GameCanvas.CellSize;
 
 public class SpriteManager {
 

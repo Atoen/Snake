@@ -31,7 +31,7 @@ public class SnakeGame {
         _pointGenerator = new RandomPointGenerator(_grid.getWidth(), _grid.getHeight());
         _center = new Point(_grid.getWidth() / 2, _grid.getHeight() / 2);
 
-        reset();
+        setupEntities();
     }
 
     public void draw(Graphics g) {
@@ -42,13 +42,17 @@ public class SnakeGame {
         _player.draw(g);
     }
 
-    public void reset() {
+    private void setupEntities() {
         _entities.clear();
-        _player = new Player(_center, 1);
+        _player = new Player(_center, 3);
 
         setObstacles(20, 5);
         spawnFruits(3);
         spawnFrog();
+    }
+
+    private void reset() {
+//        setupEntities();
 
         _updater.saveScore(_score);
         _score = 0;

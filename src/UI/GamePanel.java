@@ -1,46 +1,62 @@
 package UI;
 
 import Game.ScoreUpdater;
-import Game.SnakeGame;
+import Utils.Score;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class GamePanel extends JPanel implements ActionListener {
-    private final Timer _timer;
+public class GamePanel extends JPanel implements ScoreUpdater {
+    private final JLabel _scoreValueLabel;
+    private final JLabel _highScoreValueLabel;
+    private final MainFrameListener _listener;
 
-    private static final int TimerDelay = 200;
+    public GamePanel(MainFrameListener listener) {
+        _listener = listener;
 
-    private static final int PanelWidth = 800;
-    private static final int PanelHeight = 450;
-    public static final int CellSize = 24;
+        var topPanel = new JPanel(new BorderLayout());
 
-    private final SnakeGame _game;
+        var border = BorderFactory.createEmptyBorder(5, 10, 5, 10);
 
-    public GamePanel(ScoreUpdater updater) {
+        var scoreLabel = new JLabel("Score: ");
+        var highScoreLabel = new JLabel("HighScore: ");
+        _scoreValueLabel = new JLabel("0");
+        _highScoreValueLabel = new JLabel("0");
 
-        _game = new SnakeGame(updater, PanelWidth / CellSize, PanelHeight / CellSize);
-        _timer = new Timer(TimerDelay, this);
-        _timer.start();
+        _scoreValueLabel.setBorder(border);
+        _highScoreValueLabel.setBorder(border);
 
-        setPreferredSize(new Dimension(PanelWidth, PanelHeight));
-        setBackground(Color.black);
-        setFocusable(true);
-        addKeyListener(_game.keyListener);
+        var scorePanel = new JPanel(new BorderLayout());
+        var highScorePanel = new JPanel(new BorderLayout());
+
+        scorePanel.add(scoreLabel, BorderLayout.WEST);
+        scorePanel.add(_scoreValueLabel, BorderLayout.EAST);
+
+        highScorePanel.add(highScoreLabel, BorderLayout.WEST);
+        highScorePanel.add(_highScoreValueLabel, BorderLayout.EAST);
+
+        topPanel.add(scorePanel, BorderLayout.WEST);
+        topPanel.add(highScorePanel, BorderLayout.EAST);
+
+        add(topPanel);
+        add(new GameCanvas(this));
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        _game.draw(g);
+    public void updateScore(int score) {
+        _scoreValueLabel.setText(Integer.toString(score));
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        _game.tick();
-        repaint();
+    public void saveScore(int score) {
+        Score.saveHighScore(score);
+    }
+
+    public void onGameReset() {
+        updateHighScore();
+        _listener.onGameOver();
+    }
+
+    public void updateHighScore() {
+        _highScoreValueLabel.setText(Integer.toString(Score.readHighScore()));
     }
 }
-

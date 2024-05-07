@@ -4,7 +4,7 @@ import sprites.SpriteManager;
 
 import java.awt.*;
 
-import static UI.GamePanel.CellSize;
+import static UI.GameCanvas.CellSize;
 
 public abstract class Entity {
 

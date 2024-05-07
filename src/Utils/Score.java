@@ -7,19 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Score {
-    private int score;
-
-    public Score() {}
+    private final int score;
 
     public Score(int score) {
-        this.score = score;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
         this.score = score;
     }
 

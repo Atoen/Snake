@@ -8,7 +8,6 @@ public enum Direction {
     Left,
     Right;
 
-
     public Point translate(Point point) {
         return switch (this) {
             case Up -> new Point(point.x, point.y - 1);
