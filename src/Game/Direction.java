@@ -8,6 +8,16 @@ public enum Direction {
     Left,
     Right;
 
+    public static Direction fromInt(int value) {
+        return switch (value) {
+            case 0 -> Direction.Up;
+            case 1 -> Direction.Down;
+            case 2 -> Direction.Left;
+            case 3 -> Direction.Right;
+            default -> throw new IllegalStateException(STR."Unexpected value: \{value}");
+        };
+    }
+
     public Point translate(Point point) {
         return switch (this) {
             case Up -> new Point(point.x, point.y - 1);

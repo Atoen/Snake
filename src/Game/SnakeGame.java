@@ -3,77 +3,85 @@ package Game;
 import Entities.*;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
 public class SnakeGame {
-
-    private final Grid _grid;
     private final Point _center;
 
     private final RandomPointGenerator _pointGenerator;
-    private final ArrayList<Entity> _entities = new ArrayList<>();
     private final ScoreUpdater _updater;
 
-    private Player _player;
+    private final Player _player;
     private Direction _inputDirection = Direction.Up;
 
-    public final KeyListener keyListener = new KeyListener();
     public boolean running = true;
     private int _score;
-
 
     public SnakeGame(ScoreUpdater updater, int gridWidth, int gridHeight) {
         _updater = updater;
 
-        _grid = new Grid(gridWidth, gridHeight);
-        _pointGenerator = new RandomPointGenerator(_grid.getWidth(), _grid.getHeight());
-        _center = new Point(_grid.getWidth() / 2, _grid.getHeight() / 2);
+        EntityManager.entities.clear();
+        EntityManager.createGrid(gridWidth, gridHeight);
+
+        _pointGenerator = new RandomPointGenerator(EntityManager.grid.getWidth(), EntityManager.grid.getHeight());
+        _center = new Point(EntityManager.grid.getWidth() / 2, EntityManager.grid.getHeight() / 2);
+        _player = new Player(_center, 3);
 
         setupEntities();
     }
 
     public void draw(Graphics g) {
-        for (var entity : _entities) {
-            entity.Draw(g);
-        }
-
+        EntityManager.drawNonPlayerEntities(g);
         _player.draw(g);
     }
 
     private void setupEntities() {
-        _entities.clear();
-        _player = new Player(_center, 3);
-
         setObstacles(20, 5);
         spawnFruits(3);
         spawnFrog();
     }
 
-    private void reset() {
-//        setupEntities();
-
+    private void gameOver() {
         _updater.saveScore(_score);
-        _score = 0;
-        _updater.updateScore(_score);
+        _updater.onGameOver();
+        running = false;
+    }
 
-        _updater.onGameReset();
+    public void setDirection(Direction direction) {
+        switch (direction) {
+            case Left -> {
+                if (_player.direction != Direction.Right)
+                    _inputDirection = Direction.Left;
+            }
+            case Right -> {
+                if (_player.direction != Direction.Left)
+                    _inputDirection = Direction.Right;
+            }
+            case Up -> {
+                if (_player.direction != Direction.Down)
+                    _inputDirection = Direction.Up;
+            }
+            case Down -> {
+                if (_player.direction != Direction.Up)
+                    _inputDirection = Direction.Down;
+            }
+        }
     }
 
     public void tick() {
-        if (!checkCollisions(_inputDirection)) {
-            _player.Move(_inputDirection);
+        var collides = checkCollisions(_inputDirection);
+        if (collides) {
+            gameOver();
+            return;
         }
+
+        _player.Move(_inputDirection);
     }
 
     private void setObstacles(int amount, int clearAreaRadius) {
         var clearArea = new Rectangle(_center.x - clearAreaRadius, _center.y - clearAreaRadius, clearAreaRadius * 2, clearAreaRadius * 2);
         _pointGenerator.pickRandomPointsExcept(amount, clearArea)
-                .forEach(x -> {
-                    var rock = new Rock(x);
-                    _entities.add(rock);
-                });
+                .forEach(EntityManager::createRock);
     }
 
     private void spawnFruits(int number) {
@@ -85,41 +93,37 @@ public class SnakeGame {
     private void spawnFruit() {
         Point position;
         do  {
-            position = _pointGenerator.pickRandomPointExcept(_entities);
+            position = _pointGenerator.pickRandomPointExcept(EntityManager.entities);
         } while (_player.isColliding(position));
 
-        var apple = new Fruit(position);
-        _entities.add(apple);
+        EntityManager.createFruit(position);
     }
 
     private void spawnFrog() {
         Point position;
         do  {
-            position = _pointGenerator.pickRandomPointExcept(_entities);
+            position = _pointGenerator.pickRandomPointExcept(EntityManager.entities);
         } while (_player.isColliding(position));
 
-        var frog = new Frog(position);
-        _entities.add(frog);
+        EntityManager.createFrog(position);
     }
 
     public boolean checkCollisions(Direction inputDirection) {
         var position = _player.GetHeadPosition();
         var nextPosition = inputDirection.translate(position);
 
-        if (nextPosition.x < 0 || nextPosition.x > _grid.getWidth() ||
-            nextPosition.y < 0 || nextPosition.y > _grid.getHeight()) {
-            reset();
+        if (nextPosition.x < 0 || nextPosition.x > EntityManager.grid.getWidth() ||
+            nextPosition.y < 0 || nextPosition.y > EntityManager.grid.getHeight()) {
             return true;
         }
 
         if (_player.isColliding(nextPosition)) {
-            reset();
             return true;
         }
 
         var entitiesToRemove = new ArrayList<Entity>();
 
-        for (var entity : _entities) {
+        for (var entity : EntityManager.entities) {
             if (entity.isColliding(nextPosition)) {
                 if (entity instanceof ScoreEntity scoreEntity) {
                     _score += scoreEntity.getScore();
@@ -128,42 +132,16 @@ public class SnakeGame {
                     entitiesToRemove.add(entity);
                     _player.grow(scoreEntity.getGrowLength());
                 } else {
-                    reset();
                     return true;
                 }
             }
         }
 
-        _entities.removeAll(entitiesToRemove);
+        EntityManager.entities.removeAll(entitiesToRemove);
         entitiesToRemove.forEach(x -> {
             if (x instanceof Fruit) spawnFruit();
         });
 
         return false;
-    }
-
-    public class KeyListener extends KeyAdapter {
-        @Override
-        public void keyPressed(KeyEvent e) {
-            var code = e.getKeyCode();
-            switch (code) {
-                case KeyEvent.VK_LEFT -> {
-                    if (_player.direction != Direction.Right)
-                        _inputDirection = Direction.Left;
-                }
-                case KeyEvent.VK_RIGHT -> {
-                    if (_player.direction != Direction.Left)
-                        _inputDirection = Direction.Right;
-                }
-                case KeyEvent.VK_UP -> {
-                    if (_player.direction != Direction.Down)
-                        _inputDirection = Direction.Up;
-                }
-                case KeyEvent.VK_DOWN -> {
-                    if (_player.direction != Direction.Up)
-                        _inputDirection = Direction.Down;
-                }
-            }
-        }
     }
 }

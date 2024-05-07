@@ -5,5 +5,5 @@ public interface ScoreUpdater {
 
     void saveScore(int score);
 
-    void onGameReset();
+    void onGameOver();
 }

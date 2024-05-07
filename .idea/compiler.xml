@@ -9,6 +9,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="SnakeMaven" target="22" />
       <module name="untitled" target="22" />
     </bytecodeTargetLevel>
   </component>

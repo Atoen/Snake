@@ -41,6 +41,8 @@ public class GamePanel extends JPanel implements ScoreUpdater {
         add(topPanel);
         add(new GameCanvas(this));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        updateHighScore();
     }
 
     public void updateScore(int score) {
@@ -51,8 +53,7 @@ public class GamePanel extends JPanel implements ScoreUpdater {
         Score.saveHighScore(score);
     }
 
-    public void onGameReset() {
-        updateHighScore();
+    public void onGameOver() {
         _listener.onGameOver();
     }
 

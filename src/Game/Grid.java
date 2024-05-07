@@ -1,12 +1,19 @@
 package Game;
 
+import java.awt.*;
+import java.util.Arrays;
+
 public class Grid {
     private final int _width;
     private final int _height;
 
+    private final boolean[][] _tiles;
+
     public Grid(int width, int height) {
         _width = width;
         _height = height;
+
+        _tiles = new boolean[width][height];
     }
 
     public int getWidth() {
@@ -15,5 +22,19 @@ public class Grid {
 
     public int getHeight() {
         return _height;
+    }
+
+    public void clear() {
+        for (boolean[] tile : _tiles) {
+            Arrays.fill(tile, false);
+        }
+    }
+
+    public void markAsOccupied(Point position) {
+        _tiles[position.x][position.y] = true;
+    }
+
+    public boolean isOccupied(Point position) {
+        return _tiles[position.x][position.y];
     }
 }

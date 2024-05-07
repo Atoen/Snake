@@ -1,5 +1,7 @@
 package Game;
 
+import Entities.EntityManager;
+import Entities.SnakeHead;
 import Entities.SnakePart;
 import sprites.SpriteManager;
 
@@ -19,7 +21,7 @@ public class Player {
         _targetLength = initialLength;
         direction = Direction.Up;
 
-        head = new SnakePart(point);
+        head = EntityManager.createSnakeHead(point);
         head.direction = direction;
         parts.add(head);
     }
@@ -32,6 +34,7 @@ public class Player {
         var head = parts.getFirst();
         if (parts.size() == 1) {
             SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead0Sprite(), head.position, head.direction);
+            EntityManager.grid.markAsOccupied(head.position);
             return;
         }
 
@@ -39,6 +42,7 @@ public class Player {
 
         for (int i = 1; i < parts.size() - 1; i++) {
             var part = parts.get(i);
+            EntityManager.grid.markAsOccupied(part.position);
             var nextDirection = parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
                 SpriteManager.DrawSprite(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
@@ -103,7 +107,7 @@ public class Player {
         var newPosition = new Point(tail.position);
         var newDirection = tail.direction;
 
-        var newBody = new SnakePart(newPosition);
+        var newBody = EntityManager.createSnakePart(newPosition);
         newBody.direction = newDirection;
 
         parts.add(newBody);
