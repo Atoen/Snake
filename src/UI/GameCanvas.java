@@ -1,6 +1,8 @@
 package UI;
 
+import Entities.EntityManager;
 import Game.Direction;
+import Game.Repainter;
 import Game.ScoreUpdater;
 import Game.SnakeGame;
 
@@ -10,10 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-public class GameCanvas extends JPanel implements ActionListener {
-    private final Timer _timer;
-
-    private static final int TimerDelay = 200;
+public class GameCanvas extends JPanel implements Repainter {
 
     private static final int PanelWidth = 800;
     private static final int PanelHeight = 450;
@@ -23,7 +22,7 @@ public class GameCanvas extends JPanel implements ActionListener {
 
     public GameCanvas(ScoreUpdater updater) {
 
-        _game = new SnakeGame(updater, PanelWidth / CellSize, PanelHeight / CellSize);
+        _game = new SnakeGame(updater, this, PanelWidth / CellSize, PanelHeight / CellSize);
 
         var inFocusedWindow = JComponent.WHEN_IN_FOCUSED_WINDOW;
         getInputMap(inFocusedWindow).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "left");
@@ -35,9 +34,6 @@ public class GameCanvas extends JPanel implements ActionListener {
         getActionMap().put("right", createAction(Direction.Right));
         getActionMap().put("up", createAction(Direction.Up));
         getActionMap().put("down", createAction(Direction.Down));
-
-        _timer = new Timer(TimerDelay, this);
-        _timer.start();
 
         setPreferredSize(new Dimension(PanelWidth, PanelHeight));
         setBackground(Color.black);
@@ -60,14 +56,7 @@ public class GameCanvas extends JPanel implements ActionListener {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-
-        if (!_game.running) {
-            _timer.stop();
-            return;
-        }
-
-        _game.tick();
+    public void requestRepaint() {
         repaint();
     }
 }

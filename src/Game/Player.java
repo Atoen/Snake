@@ -1,7 +1,7 @@
 package Game;
 
+import Entities.Entity;
 import Entities.EntityManager;
-import Entities.SnakeHead;
 import Entities.SnakePart;
 import sprites.SpriteManager;
 
@@ -14,12 +14,13 @@ public class Player {
     public final List<SnakePart> parts = new ArrayList<>();
     public final SnakePart head;
 
-    public Direction direction;
+    public Direction direction = Direction.Up;
+    public Direction inputDirection = Direction.Up;
+
     private int _targetLength;
 
     public Player(Point point, int initialLength) {
         _targetLength = initialLength;
-        direction = Direction.Up;
 
         head = EntityManager.createSnakeHead(point);
         head.direction = direction;
@@ -27,32 +28,32 @@ public class Player {
     }
 
     public Point GetHeadPosition() {
-        return parts.getFirst().position;
+        return parts.getFirst().getPosition();
     }
 
     public void draw(Graphics g) {
         var head = parts.getFirst();
         if (parts.size() == 1) {
-            SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead0Sprite(), head.position, head.direction);
-            EntityManager.grid.markAsOccupied(head.position);
+            SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead0Sprite(), head.getPosition(), head.direction);
+            EntityManager.getGrid().markAsOccupied(head.getPosition());
             return;
         }
 
-        SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead1Sprite(), head.position, head.direction);
+        SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead1Sprite(), head.getPosition(), head.direction);
 
         for (int i = 1; i < parts.size() - 1; i++) {
             var part = parts.get(i);
-            EntityManager.grid.markAsOccupied(part.position);
+            EntityManager.getGrid().markAsOccupied(part.getPosition());
             var nextDirection = parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
-                SpriteManager.DrawSprite(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
+                SpriteManager.DrawSprite(g, SpriteManager.getPlayerBodySprite(), part.getPosition(), part.direction);
             } else {
-                SpriteManager.DrawSprite(g, getTurnImage(part.direction, nextDirection), part.position);
+                SpriteManager.DrawSprite(g, getTurnImage(part.direction, nextDirection), part.getPosition());
             }
         }
 
         var tail = parts.getLast();
-        SpriteManager.DrawSprite(g, SpriteManager.getPlayerTailSprite(), tail.position, tail.direction);
+        SpriteManager.DrawSprite(g, SpriteManager.getPlayerTailSprite(), tail.getPosition(), tail.direction);
     }
 
     private Image getTurnImage(Direction current, Direction next) {
@@ -65,8 +66,29 @@ public class Player {
         };
     }
 
-    public void Move(Direction direction) {
-        this.direction = direction;
+    public void setDirection(Direction newDirection) {
+        switch (newDirection) {
+            case Left -> {
+                if (direction != Direction.Right)
+                    inputDirection = Direction.Left;
+            }
+            case Right -> {
+                if (direction != Direction.Left)
+                    inputDirection = Direction.Right;
+            }
+            case Up -> {
+                if (direction != Direction.Down)
+                    inputDirection = Direction.Up;
+            }
+            case Down -> {
+                if (direction != Direction.Up)
+                    inputDirection = Direction.Down;
+            }
+        }
+    }
+
+    public void Move() {
+        direction = inputDirection;
         head.direction = direction;
 
         if (parts.size() < _targetLength) {
@@ -77,16 +99,16 @@ public class Player {
             var currentPart = parts.get(i);
             var previousPart = parts.get(i - 1);
 
-            currentPart.position = new Point(previousPart.position);
+            currentPart.setPosition(new Point(previousPart.getPosition()));
             currentPart.direction = previousPart.direction;
         }
 
         var head = parts.getFirst();
         switch (direction) {
-            case Up -> head.position.y--;
-            case Down -> head.position.y++;
-            case Left -> head.position.x--;
-            case Right -> head.position.x++;
+            case Up -> head.getPosition().y--;
+            case Down -> head.getPosition().y++;
+            case Left -> head.getPosition().x--;
+            case Right -> head.getPosition().x++;
         }
     }
 
@@ -104,7 +126,7 @@ public class Player {
 
     private void grow() {
         var tail = parts.getLast();
-        var newPosition = new Point(tail.position);
+        var newPosition = new Point(tail.getPosition());
         var newDirection = tail.direction;
 
         var newBody = EntityManager.createSnakePart(newPosition);

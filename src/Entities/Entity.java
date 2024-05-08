@@ -9,29 +9,37 @@ import static UI.GameCanvas.CellSize;
 public abstract class Entity {
 
     protected Entity(Point point) {
-        position = new Point(point);
+        setPosition(new Point(point));
     }
 
-    public Point position;
+    private Point _position;
+
+    public Point getPosition() {
+        return _position;
+    }
+
+    public void setPosition(Point _position) {
+        this._position = _position;
+    }
 
     public Color getColor() { return Color.magenta; }
     public Image getSprite() { return null; }
 
     public boolean isColliding(Entity entity) {
-        return position.equals(entity.position);
+        return getPosition().equals(entity.getPosition());
     }
 
     public boolean isColliding(Point point) {
-        return position.equals(point);
+        return getPosition().equals(point);
     }
 
     public void Draw(Graphics g) {
         var sprite = getSprite();
         if (sprite != null) {
-            SpriteManager.DrawSprite(g, sprite, position);
+            SpriteManager.DrawSprite(g, sprite, getPosition());
         } else {
             g.setColor(getColor());
-            g.fillRect(position.x * CellSize, position.y * CellSize, CellSize, CellSize);
+            g.fillRect(getPosition().x * CellSize, getPosition().y * CellSize, CellSize, CellSize);
         }
     }
 }

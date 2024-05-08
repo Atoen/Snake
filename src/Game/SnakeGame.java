@@ -1,6 +1,7 @@
 package Game;
 
 import Entities.*;
+import Threads.TimerThread;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -12,22 +13,60 @@ public class SnakeGame {
     private final ScoreUpdater _updater;
 
     private final Player _player;
-    private Direction _inputDirection = Direction.Up;
 
-    public boolean running = true;
     private int _score;
 
-    public SnakeGame(ScoreUpdater updater, int gridWidth, int gridHeight) {
+    private final TimerThread[] _threads = new TimerThread[4];
+
+    public SnakeGame(ScoreUpdater updater, Repainter repainter, int gridWidth, int gridHeight) {
         _updater = updater;
 
-        EntityManager.entities.clear();
+        EntityManager.getEntities().clear();
         EntityManager.createGrid(gridWidth, gridHeight);
 
-        _pointGenerator = new RandomPointGenerator(EntityManager.grid.getWidth(), EntityManager.grid.getHeight());
-        _center = new Point(EntityManager.grid.getWidth() / 2, EntityManager.grid.getHeight() / 2);
+        _pointGenerator = new RandomPointGenerator(EntityManager.getGrid().getWidth(), EntityManager.getGrid().getHeight());
+        _center = new Point(EntityManager.getGrid().getWidth() / 2, EntityManager.getGrid().getHeight() / 2);
         _player = new Player(_center, 3);
 
         setupEntities();
+
+        _threads[0] = new TimerThread(200, () -> {
+            var collides = checkCollisions();
+            if (collides) {
+                gameOver();
+                return;
+            }
+
+            _player.Move();
+            repainter.requestRepaint();
+        });
+
+        _threads[1] = new TimerThread(300, () -> {
+            var frogs = EntityManager.findAllEntities(Frog.class);
+            for (var frog : frogs) {
+                frog.move();
+            }
+            repainter.requestRepaint();
+        });
+
+        _threads[2] = new TimerThread(500, () -> {
+            System.out.println("Ai snake #1");
+        });
+
+        _threads[3] = new TimerThread(500, () -> {
+            System.out.println("Ai snake #2");
+        });
+
+        _threads[0].start();
+        _threads[1].start();
+        _threads[2].start();
+        _threads[3].start();
+    }
+
+    private void stopThreads() {
+        for (var thread : _threads) {
+            thread.terminate();
+        }
     }
 
     public void draw(Graphics g) {
@@ -39,43 +78,17 @@ public class SnakeGame {
         setObstacles(20, 5);
         spawnFruits(3);
         spawnFrog();
+        spawnFrog();
     }
 
     private void gameOver() {
+        stopThreads();
         _updater.saveScore(_score);
         _updater.onGameOver();
-        running = false;
     }
 
     public void setDirection(Direction direction) {
-        switch (direction) {
-            case Left -> {
-                if (_player.direction != Direction.Right)
-                    _inputDirection = Direction.Left;
-            }
-            case Right -> {
-                if (_player.direction != Direction.Left)
-                    _inputDirection = Direction.Right;
-            }
-            case Up -> {
-                if (_player.direction != Direction.Down)
-                    _inputDirection = Direction.Up;
-            }
-            case Down -> {
-                if (_player.direction != Direction.Up)
-                    _inputDirection = Direction.Down;
-            }
-        }
-    }
-
-    public void tick() {
-        var collides = checkCollisions(_inputDirection);
-        if (collides) {
-            gameOver();
-            return;
-        }
-
-        _player.Move(_inputDirection);
+        _player.setDirection(direction);
     }
 
     private void setObstacles(int amount, int clearAreaRadius) {
@@ -93,7 +106,7 @@ public class SnakeGame {
     private void spawnFruit() {
         Point position;
         do  {
-            position = _pointGenerator.pickRandomPointExcept(EntityManager.entities);
+            position = _pointGenerator.pickRandomPointExcept(EntityManager.getEntities());
         } while (_player.isColliding(position));
 
         EntityManager.createFruit(position);
@@ -102,18 +115,18 @@ public class SnakeGame {
     private void spawnFrog() {
         Point position;
         do  {
-            position = _pointGenerator.pickRandomPointExcept(EntityManager.entities);
+            position = _pointGenerator.pickRandomPointExcept(EntityManager.getEntities());
         } while (_player.isColliding(position));
 
         EntityManager.createFrog(position);
     }
 
-    public boolean checkCollisions(Direction inputDirection) {
+    public boolean checkCollisions() {
         var position = _player.GetHeadPosition();
-        var nextPosition = inputDirection.translate(position);
+        var nextPosition = _player.inputDirection.translate(position);
 
-        if (nextPosition.x < 0 || nextPosition.x > EntityManager.grid.getWidth() ||
-            nextPosition.y < 0 || nextPosition.y > EntityManager.grid.getHeight()) {
+        if (nextPosition.x < 0 || nextPosition.x > EntityManager.getGrid().getWidth() ||
+            nextPosition.y < 0 || nextPosition.y > EntityManager.getGrid().getHeight()) {
             return true;
         }
 
@@ -123,7 +136,7 @@ public class SnakeGame {
 
         var entitiesToRemove = new ArrayList<Entity>();
 
-        for (var entity : EntityManager.entities) {
+        for (var entity : EntityManager.getEntities()) {
             if (entity.isColliding(nextPosition)) {
                 if (entity instanceof ScoreEntity scoreEntity) {
                     _score += scoreEntity.getScore();
@@ -137,7 +150,7 @@ public class SnakeGame {
             }
         }
 
-        EntityManager.entities.removeAll(entitiesToRemove);
+        EntityManager.getEntities().removeAll(entitiesToRemove);
         entitiesToRemove.forEach(x -> {
             if (x instanceof Fruit) spawnFruit();
         });
