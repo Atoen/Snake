@@ -1,6 +1,5 @@
 package Game;
 
-import Entities.Entity;
 import Entities.EntityManager;
 import Entities.SnakePart;
 import sprites.SpriteManager;

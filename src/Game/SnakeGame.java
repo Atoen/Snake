@@ -11,12 +11,12 @@ public class SnakeGame {
 
     private final RandomPointGenerator _pointGenerator;
     private final ScoreUpdater _updater;
-
-    private final Player _player;
+    private final Snake _player;
 
     private int _score;
 
     private final TimerThread[] _threads = new TimerThread[4];
+    public Direction inputDirection = Direction.Up;
 
     public SnakeGame(ScoreUpdater updater, Repainter repainter, int gridWidth, int gridHeight) {
         _updater = updater;
@@ -26,7 +26,7 @@ public class SnakeGame {
 
         _pointGenerator = new RandomPointGenerator(EntityManager.getGrid().getWidth(), EntityManager.getGrid().getHeight());
         _center = new Point(EntityManager.getGrid().getWidth() / 2, EntityManager.getGrid().getHeight() / 2);
-        _player = new Player(_center, 3);
+        _player = EntityManager.createSnake(_center, 10);
 
         setupEntities();
 
@@ -37,7 +37,8 @@ public class SnakeGame {
                 return;
             }
 
-            _player.Move();
+            _player.direction = inputDirection;
+            _player.move();
             repainter.requestRepaint();
         });
 
@@ -69,11 +70,6 @@ public class SnakeGame {
         }
     }
 
-    public void draw(Graphics g) {
-        EntityManager.drawNonPlayerEntities(g);
-        _player.draw(g);
-    }
-
     private void setupEntities() {
         setObstacles(20, 5);
         spawnFruits(3);
@@ -87,8 +83,25 @@ public class SnakeGame {
         _updater.onGameOver();
     }
 
-    public void setDirection(Direction direction) {
-        _player.setDirection(direction);
+    public void setPlayerDirection(Direction newDirection) {
+        switch (newDirection) {
+            case Left -> {
+                if (_player.direction != Direction.Right)
+                    inputDirection = Direction.Left;
+            }
+            case Right -> {
+                if (_player.direction != Direction.Left)
+                    inputDirection = Direction.Right;
+            }
+            case Up -> {
+                if (_player.direction != Direction.Down)
+                    inputDirection = Direction.Up;
+            }
+            case Down -> {
+                if (_player.direction != Direction.Up)
+                    inputDirection = Direction.Down;
+            }
+        }
     }
 
     private void setObstacles(int amount, int clearAreaRadius) {
@@ -122,17 +135,15 @@ public class SnakeGame {
     }
 
     public boolean checkCollisions() {
-        var position = _player.GetHeadPosition();
-        var nextPosition = _player.inputDirection.translate(position);
+        var position = _player.getPosition();
+        var nextPosition = _player.direction.translate(position);
 
         if (nextPosition.x < 0 || nextPosition.x > EntityManager.getGrid().getWidth() ||
             nextPosition.y < 0 || nextPosition.y > EntityManager.getGrid().getHeight()) {
             return true;
         }
 
-        if (_player.isColliding(nextPosition)) {
-            return true;
-        }
+        if (EntityManager.getGrid().isSpotAvailable(nextPosition)) return false;
 
         var entitiesToRemove = new ArrayList<Entity>();
 

@@ -1,13 +1,12 @@
 package Entities;
 
 import Game.Direction;
-import Game.Player;
 import sprites.SpriteManager;
 
 import java.awt.*;
 import java.util.Random;
 
-public class Frog extends Entity implements ScoreEntity {
+public class Frog extends Entity implements ScoreEntity, MovingEntity {
     private static final Random _random = new Random();
 
     public Frog(Point point) {
@@ -30,21 +29,21 @@ public class Frog extends Entity implements ScoreEntity {
     }
 
     public void move() {
-        var snakeHead = EntityManager.findFirstEntity(SnakeHead.class);
-        assert snakeHead != null;
+        var snake = EntityManager.findFirstEntity(Snake.class);
+        assert snake != null;
 
-        var distance = Math.sqrt(Math.pow(getPosition().x - snakeHead.getPosition().x, 2) + Math.pow(getPosition().y - snakeHead.getPosition().y, 2));
+        var distance = Math.sqrt(Math.pow(getPosition().x - snake.getPosition().x, 2) + Math.pow(getPosition().y - snake.getPosition().y, 2));
         if (distance < 8) {
-            avoidSnake(snakeHead);
+            avoidSnake(snake);
         } else {
             moveRandomly();
         }
     }
 
-    private void avoidSnake(SnakeHead snakeHead) {
-        double angle = Math.atan2(getPosition().y - snakeHead.getPosition().y, getPosition().x - snakeHead.getPosition().x);
-        int dx = (int) Math.round(Math.cos(angle));
-        int dy = (int) Math.round(Math.sin(angle));
+    private void avoidSnake(Snake snake) {
+        var angle = Math.atan2(getPosition().y - snake.getPosition().y, getPosition().x - snake.getPosition().x);
+        var dx = (int) Math.round(Math.cos(angle));
+        var dy = (int) Math.round(Math.sin(angle));
 
         var newPosition = (new Point(getPosition().x + dx, getPosition().y + dy));
         if (EntityManager.getGrid().isValidPosition(newPosition)) {
@@ -55,9 +54,11 @@ public class Frog extends Entity implements ScoreEntity {
     }
 
     private void moveRandomly() {
-        for (int i = 0; i < 5; i++) {
+        var index = _random.nextInt(4);
+        for (var i = 0; i < 4; i++) {
 
-            var direction = Direction.fromInt(_random.nextInt(4));
+            var rotatedIndex = (index + i) % 4;
+            var direction = Direction.fromInt(rotatedIndex);
 
             var newPosition = direction.translate(getPosition());
             if (EntityManager.getGrid().isValidPosition(newPosition)) {

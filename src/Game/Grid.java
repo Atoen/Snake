@@ -1,7 +1,5 @@
 package Game;
 
-import Entities.EntityManager;
-
 import java.awt.*;
 import java.util.Arrays;
 
@@ -36,13 +34,13 @@ public class Grid {
         _tiles[position.x][position.y] = true;
     }
 
-    public boolean isOccupied(Point position) {
-        return _tiles[position.x][position.y];
+    public boolean isSpotAvailable(Point position) {
+        return !_tiles[position.x][position.y];
     }
 
     public boolean isValidPosition(Point position) {
         return position.x >= 0 && position.x < _width &&
                position.y >= 0 && position.y < _height &&
-               !isOccupied(position);
+                isSpotAvailable(position);
     }
 }

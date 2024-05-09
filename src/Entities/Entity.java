@@ -18,8 +18,8 @@ public abstract class Entity {
         return _position;
     }
 
-    public void setPosition(Point _position) {
-        this._position = _position;
+    public void setPosition(Point position) {
+        _position = position;
     }
 
     public Color getColor() { return Color.magenta; }

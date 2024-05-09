@@ -5,14 +5,14 @@ import Game.Grid;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class EntityManager {
 
     private EntityManager() {}
 
     private static final List<Entity> _entities = Collections.synchronizedList(new ArrayList<>());
-    private static final Random _random = new Random();
-    private static final Object lock = new Object();
     private static Grid _grid;
 
     public static synchronized Grid getGrid() {
@@ -21,6 +21,12 @@ public class EntityManager {
 
     public static synchronized List<Entity> getEntities() {
         return _entities;
+    }
+
+    public static synchronized List<Entity> getEntities(Predicate<Entity> predicate) {
+        return _entities.stream()
+                .filter(predicate)
+                .collect(Collectors.toList());
     }
 
     public static synchronized void createGrid(int width, int height) {
@@ -46,7 +52,7 @@ public class EntityManager {
         return entitiesOfType;
     }
 
-    public static synchronized void drawNonPlayerEntities(Graphics g) {
+    public static synchronized void drawEntities(Graphics g) {
         _grid.clear();
 
         for (var entity : _entities) {
@@ -62,6 +68,13 @@ public class EntityManager {
         _entities.add(fruit);
 
         return fruit;
+    }
+
+    public static synchronized Snake createSnake(Point position, int initialLength) {
+        var snake = new Snake(position, initialLength);
+        _entities.add(snake);
+
+        return snake;
     }
 
     public static synchronized Rock createRock(Point position) {
