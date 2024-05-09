@@ -1,76 +1,65 @@
-package sprites;
+package Sprites;
 
 import Game.Direction;
+import Game.SnakeColor;
+import Game.SnakePart;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Random;
+import java.util.*;
 
 import static UI.GameCanvas.CellSize;
 
 public class SpriteManager {
 
-    private static Image _playerBodySprite;
-    private static Image _playerTailSprite;
-    private static Image _playerHead0Sprite;
-    private static Image _playerHead1Sprite;
-    private static Image[] _playerBodyTurnSprites;
+    private static final Map<SnakeColor, Map<SnakePart, Image>> _snakeSprites = new HashMap<>();
 
     private static Image[] _rockSprites;
     private static Image[] _fruitSprites;
-
     private static Image _frogSprite;
 
     private static final Random _random = new Random();
 
-    public static Image getPlayerBodySprite() {
-        if (_playerBodySprite != null) {
-            return _playerBodySprite;
+    public static Image getSnakeSprite(SnakeColor color, SnakePart part) {
+        var partMap = _snakeSprites.computeIfAbsent(color, _ -> CreateEmptyPartMap());
+        var image = partMap.get(part);
+
+        if (image != null) {
+            return image;
         }
 
-        _playerBodySprite = loadImage("src/sprites/body.png");
-        return _playerBodySprite;
+        var path = createPath(color, part);
+        image = loadImage(path);
+        partMap.put(part, image);
+
+        return image;
     }
 
-    public static Image getPlayerTailSprite() {
-        if (_playerTailSprite != null) {
-            return _playerTailSprite;
+    public static Map<SnakePart, Image> getSnakeSprites(SnakeColor color) {
+        var partMap = _snakeSprites.computeIfAbsent(color, _ -> CreateEmptyPartMap());
+        var partsToLoad = new HashSet<SnakePart>();
+
+        partMap.forEach((key, value) -> {
+            if (value == null) {
+                partsToLoad.add(key);
+            }
+        });
+
+        for (var missingPart : partsToLoad) {
+            var loadedImage = loadImage(createPath(color, missingPart));
+            partMap.put(missingPart, loadedImage);
         }
 
-        _playerTailSprite = loadImage("src/sprites/tail.png");
-        return _playerTailSprite;
+        return partMap;
     }
 
-    public static Image getPlayerHead0Sprite() {
-        if (_playerHead0Sprite != null) {
-            return _playerHead0Sprite;
+    private static Map<SnakePart, Image> CreateEmptyPartMap() {
+        var map = new HashMap<SnakePart, Image>();
+        for (SnakePart part : SnakePart.values()) {
+            map.put(part, null);
         }
 
-        _playerHead0Sprite = loadImage("src/sprites/head0.png");
-        return _playerHead0Sprite;
-    }
-
-    public static Image getPlayerHead1Sprite() {
-        if (_playerHead1Sprite != null) {
-            return _playerHead1Sprite;
-        }
-
-        _playerHead1Sprite = loadImage("src/sprites/head1.png");
-        return _playerHead1Sprite;
-    }
-
-    public static Image[] getPlayerBodyTurnSprites() {
-        if (_playerBodyTurnSprites != null) {
-            return _playerBodyTurnSprites;
-        }
-
-        _playerBodyTurnSprites = new Image[4];
-        _playerBodyTurnSprites[0] = loadImage("src/sprites/bodyturn1.png");
-        _playerBodyTurnSprites[1] = loadImage("src/sprites/bodyturn2.png");
-        _playerBodyTurnSprites[2] = loadImage("src/sprites/bodyturn3.png");
-        _playerBodyTurnSprites[3] = loadImage("src/sprites/bodyturn4.png");
-
-        return _playerBodyTurnSprites;
+        return map;
     }
 
     public static Image[] getRockSprites() {
@@ -121,6 +110,11 @@ public class SpriteManager {
         return _frogSprite;
     }
 
+    public static void DrawSnakeSprite(Graphics g, SnakeColor color, SnakePart part, Point position, Direction direction) {
+        var sprite = getSnakeSprite(color, part);
+        DrawSprite(g, sprite, position, direction);
+    }
+
     public static void DrawSprite(Graphics g, Image sprite, Point position) {
         DrawSprite(g, sprite, position, Direction.Up);
     }
@@ -133,14 +127,20 @@ public class SpriteManager {
         var centerY = position.y * CellSize + CellSize / 2;
 
         g2d.translate(centerX, centerY);
-        g2d.rotate(direction.getRadians());
+
+        if (direction != Direction.Up) {
+            g2d.rotate(direction.getRadians());
+        }
 
         g2d.drawImage(sprite, - CellSize / 2, - CellSize / 2, CellSize, CellSize, null);
         g2d.setTransform(startingTransform);
     }
 
-    private static Image loadImage(String path) {
+    private static String createPath(SnakeColor color, SnakePart part) {
+        return STR."src/sprites/snakes/\{color.getValue()}/\{part.getValue()}.png";
+    }
 
+    private static Image loadImage(String path) {
         try {
             return new ImageIcon(path).getImage();
         } catch (Exception e) {

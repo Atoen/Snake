@@ -9,6 +9,10 @@ public class Grid {
 
     private final boolean[][] _tiles;
 
+    public Point GetCenter() {
+        return new Point(_width / 2, _height / 2);
+    }
+
     public Grid(int width, int height) {
         _width = width;
         _height = height;

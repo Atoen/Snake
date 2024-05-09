@@ -1,7 +1,7 @@
 package Entities;
 
 import Game.Direction;
-import sprites.SpriteManager;
+import Sprites.SpriteManager;
 
 import java.awt.*;
 import java.util.Random;

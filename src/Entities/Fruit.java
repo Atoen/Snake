@@ -1,6 +1,6 @@
 package Entities;
 
-import sprites.SpriteManager;
+import Sprites.SpriteManager;
 
 import java.awt.*;
 

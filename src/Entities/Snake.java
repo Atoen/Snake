@@ -1,7 +1,9 @@
 package Entities;
 
 import Game.Direction;
-import sprites.SpriteManager;
+import Game.SnakeColor;
+import Game.SnakePart;
+import Sprites.SpriteManager;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -9,18 +11,20 @@ import java.util.List;
 
 public class Snake extends Entity implements MovingEntity {
 
-    private final List<Snake.SnakePart> _parts = new ArrayList<>();
-    private final Snake.SnakePart _head;
+    private final List<Part> _parts = new ArrayList<>();
+    private final Part _head;
 
     private int _targetLength;
 
     public Direction direction = Direction.Up;
+    public final SnakeColor color;
 
-    public Snake(Point point, int initialLength) {
+    public Snake(Point point, SnakeColor color, int initialLength) {
         super(point);
 
+        this.color = color;
         _targetLength = initialLength;
-        _head = new SnakePart(point);
+        _head = new Part(point);
         _parts.add(_head);
     }
 
@@ -72,37 +76,38 @@ public class Snake extends Entity implements MovingEntity {
         EntityManager.getGrid().markAsOccupied(_head.position);
 
         if (_parts.size() == 1) {
-            SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead0Sprite(), _head.position, _head.direction);
+            SpriteManager.DrawSnakeSprite(g, color, SnakePart.Head0, _head.position, _head.direction);
             return;
         }
 
-        SpriteManager.DrawSprite(g, SpriteManager.getPlayerHead1Sprite(), _head.position, _head.direction);
+        SpriteManager.DrawSnakeSprite(g, color, SnakePart.Head1, _head.position, _head.direction);
 
         for (int i = 1; i < _parts.size() - 1; i++) {
             var part = _parts.get(i);
             EntityManager.getGrid().markAsOccupied(part.position);
             var nextDirection = _parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
-                SpriteManager.DrawSprite(g, SpriteManager.getPlayerBodySprite(), part.position, part.direction);
+                SpriteManager.DrawSnakeSprite(g, color, SnakePart.Body, part.position, part.direction);
             } else {
                 SpriteManager.DrawSprite(g, getTurnImage(part.direction, nextDirection), part.position);
             }
         }
 
         var tail = _parts.getLast();
-        SpriteManager.DrawSprite(g, SpriteManager.getPlayerTailSprite(), tail.position, tail.direction);
+        SpriteManager.DrawSnakeSprite(g, color, SnakePart.Tail, tail.position, tail.direction);
         EntityManager.getGrid().markAsOccupied(tail.position);
-
     }
 
     private Image getTurnImage(Direction current, Direction next) {
-        var sprites = SpriteManager.getPlayerBodyTurnSprites();
-        return switch (current) {
-            case Up -> next == Direction.Left ? sprites[2] : sprites[1];
-            case Down -> next == Direction.Left ? sprites[3] : sprites[0];
-            case Left -> next == Direction.Down ? sprites[1] : sprites[0];
-            case Right -> next == Direction.Down ? sprites[2] : sprites[3];
+        var sprites = SpriteManager.getSnakeSprites(color);
+        var part = switch (current) {
+            case Up -> next == Direction.Left ? SnakePart.Turn3 : SnakePart.Turn2;
+            case Down -> next == Direction.Left ? SnakePart.Turn4 : SnakePart.Turn1;
+            case Left -> next == Direction.Down ? SnakePart.Turn2 : SnakePart.Turn1;
+            case Right -> next == Direction.Down ? SnakePart.Turn3 : SnakePart.Turn4;
         };
+
+        return sprites.get(part);
     }
 
     public void grow(int length) {
@@ -114,14 +119,14 @@ public class Snake extends Entity implements MovingEntity {
         var newPosition = new Point(tail.position);
         var newDirection = tail.direction;
 
-        var newPart = new SnakePart(newPosition);
+        var newPart = new Part(newPosition);
         newPart.direction = newDirection;
 
         _parts.add(newPart);
     }
 
-    public static class SnakePart {
-        public SnakePart(Point position) {
+    public static class Part {
+        public Part(Point position) {
             this.position = position;
         }
 

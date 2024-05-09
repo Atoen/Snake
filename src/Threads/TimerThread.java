@@ -16,6 +16,7 @@ public class TimerThread extends Thread {
         _running = false;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
         if (_running) return;
