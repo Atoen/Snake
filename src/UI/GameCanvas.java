@@ -43,7 +43,7 @@ public class GameCanvas extends JPanel implements Repainter {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                _game.setPlayerDirection(direction);
+                _game.inputDirection = direction;
             }
         };
     }

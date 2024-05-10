@@ -22,24 +22,7 @@ public class RandomPointGenerator {
         _maxY = maxY;
     }
 
-    public Point pickRandomPoint() {
-        var x = _random.nextInt(_maxX);
-        var y = _random.nextInt(_maxY);
-
-        return new Point(x, y);
-    }
-
-    public Point pickRandomPointExcept(Rectangle rectangle) {
-        return tryRandomizeWithConstraint(rectangle, (p, rect) -> !rect.contains(p))
-                .orElse(null);
-    }
-
-    public Point pickRandomPointExcept(Point point) {
-        return pickRandomPointExcept(new Rectangle(point.x, point.y, 1, 1));
-    }
-
     public Point pickRandomPointExcept(List<Entity> existingEntities) {
-
         return tryRandomizeWithConstraint(existingEntities, this::doesntCollideWithEntities)
                 .orElseThrow();
     }

@@ -1,15 +1,17 @@
 package Threads;
 
+import java.util.function.Consumer;
+
 public class TimerThread extends Thread {
 
     private final int _stepMs;
-    private final Runnable _runnable;
+    private final Consumer<TimerThread> _consumer;
 
     private volatile boolean _running;
 
-    public TimerThread(int stepMs, Runnable runnable) {
+    public TimerThread(int stepMs, Consumer<TimerThread> consumer) {
         _stepMs = stepMs;
-        _runnable = runnable;
+        _consumer = consumer;
     }
 
     public void terminate() {
@@ -24,7 +26,7 @@ public class TimerThread extends Thread {
 
         while (_running) {
             try {
-                _runnable.run();
+                _consumer.accept(this);
                 Thread.sleep(_stepMs);
             } catch (Exception e) {
                 e.printStackTrace();

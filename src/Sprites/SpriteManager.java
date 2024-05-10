@@ -3,6 +3,7 @@ package Sprites;
 import Game.Direction;
 import Game.SnakeColor;
 import Game.SnakePart;
+import Utils.SharedRandom;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,8 +19,6 @@ public class SpriteManager {
     private static Image[] _fruitSprites;
     private static Image _frogSprite;
 
-    private static final Random _random = new Random();
-
     public static Image getSnakeSprite(SnakeColor color, SnakePart part) {
         var partMap = _snakeSprites.computeIfAbsent(color, _ -> CreateEmptyPartMap());
         var image = partMap.get(part);
@@ -32,24 +31,6 @@ public class SpriteManager {
         partMap.put(part, image);
 
         return image;
-    }
-
-    public static Map<SnakePart, Image> getSnakeSprites(SnakeColor color) {
-        var partMap = _snakeSprites.computeIfAbsent(color, _ -> CreateEmptyPartMap());
-        var partsToLoad = new HashSet<SnakePart>();
-
-        partMap.forEach((key, value) -> {
-            if (value == null) {
-                partsToLoad.add(key);
-            }
-        });
-
-        for (var missingPart : partsToLoad) {
-            var loadedImage = loadImage(createSnakeSpritePath(color, missingPart));
-            partMap.put(missingPart, loadedImage);
-        }
-
-        return partMap;
     }
 
     private static Map<SnakePart, Image> CreateEmptyPartMap() {
@@ -76,7 +57,7 @@ public class SpriteManager {
 
     public static Image getRandomRockSprite() {
         var sprites = getRockSprites();
-        var index = _random.nextInt(sprites.length);
+        var index = SharedRandom.nextInt(sprites.length);
         return sprites[index];
     }
 
@@ -96,7 +77,7 @@ public class SpriteManager {
 
     public static Image getRandomFruitSprite() {
         var sprites = getFruitSprites();
-        var index = _random.nextInt(sprites.length);
+        var index = SharedRandom.nextInt(sprites.length);
         return sprites[index];
     }
 

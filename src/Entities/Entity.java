@@ -25,10 +25,6 @@ public abstract class Entity {
     public Color getColor() { return Color.magenta; }
     public Image getSprite() { return null; }
 
-    public boolean isColliding(Entity entity) {
-        return getPosition().equals(entity.getPosition());
-    }
-
     public boolean isColliding(Point point) {
         return getPosition().equals(point);
     }
@@ -41,5 +37,9 @@ public abstract class Entity {
             g.setColor(getColor());
             g.fillRect(getPosition().x * CellSize, getPosition().y * CellSize, CellSize, CellSize);
         }
+    }
+
+    public double distanceTo(Entity other) {
+        return Math.sqrt(Math.pow(_position.x - other._position.x, 2) + Math.pow(_position.y - other._position.y, 2));
     }
 }

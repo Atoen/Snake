@@ -4,10 +4,15 @@ import java.awt.*;
 import java.util.Arrays;
 
 public class Grid {
+
+    public static final int Empty = 0;
+    public static final int Eatable = 1;
+    public static final int Obstacle = 2;
+
     private final int _width;
     private final int _height;
 
-    private final boolean[][] _tiles;
+    private final int[][] _tiles;
 
     public Point GetCenter() {
         return new Point(_width / 2, _height / 2);
@@ -17,7 +22,7 @@ public class Grid {
         _width = width;
         _height = height;
 
-        _tiles = new boolean[width][height];
+        _tiles = new int[width][height];
     }
 
     public int getWidth() {
@@ -29,22 +34,28 @@ public class Grid {
     }
 
     public void clear() {
-        for (boolean[] tile : _tiles) {
-            Arrays.fill(tile, false);
+        for (int[] tile : _tiles) {
+            Arrays.fill(tile, Empty);
         }
     }
 
-    public void markAsOccupied(Point position) {
-        _tiles[position.x][position.y] = true;
+    public void markAsOccupied(Point position, int type) {
+        _tiles[position.x][position.y] = type;
     }
 
-    public boolean isSpotAvailable(Point position) {
-        return !_tiles[position.x][position.y];
+    public boolean isSpotEmpty(Point position) {
+        return _tiles[position.x][position.y] == Empty;
     }
 
-    public boolean isValidPosition(Point position) {
-        return position.x >= 0 && position.x < _width &&
-               position.y >= 0 && position.y < _height &&
-                isSpotAvailable(position);
+    public boolean isValidPosition(Point position, boolean allowEatables) {
+        var outOfBounds = position.x < 0 || position.x >= _width ||
+                          position.y < 0 || position.y >= _height;
+
+        if (outOfBounds) return false;
+
+        var tile = _tiles[position.x][position.y];
+        return allowEatables
+               ? tile == 0 || tile == 1
+               : tile == 0;
     }
 }

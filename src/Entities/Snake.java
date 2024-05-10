@@ -1,6 +1,7 @@
 package Entities;
 
 import Game.Direction;
+import Game.Grid;
 import Game.SnakeColor;
 import Game.SnakePart;
 import Sprites.SpriteManager;
@@ -17,6 +18,7 @@ public class Snake extends Entity implements MovingEntity {
     private int _targetLength;
 
     public Direction direction = Direction.Up;
+    public boolean isAlive = true;
     public final SnakeColor color;
 
     public Snake(Point point, SnakeColor color, Integer initialLength) {
@@ -57,9 +59,20 @@ public class Snake extends Entity implements MovingEntity {
         }
     }
 
-    @Override
-    public boolean isColliding(Entity entity) {
-        return isColliding(entity.getPosition());
+    public boolean isNextDirectionValid(Direction nextDirection) {
+        return switch (nextDirection) {
+            case Up -> direction != Direction.Down;
+            case Down -> direction != Direction.Up;
+            case Left -> direction != Direction.Right;
+            case Right -> direction != Direction.Left;
+            case null -> false;
+        };
+    }
+
+    public void setDirection(Direction nextDirection) {
+        if (isNextDirectionValid(nextDirection)) {
+            direction = nextDirection;
+        }
     }
 
     @Override
@@ -73,7 +86,7 @@ public class Snake extends Entity implements MovingEntity {
 
     @Override
     public void Draw(Graphics g) {
-        EntityManager.getGrid().markAsOccupied(_head.position);
+        EntityManager.getGrid().markAsOccupied(_head.position, Grid.Obstacle);
 
         if (_parts.size() == 1) {
             SpriteManager.DrawSnakeSprite(g, color, SnakePart.Head0, _head.position, _head.direction);
@@ -84,7 +97,7 @@ public class Snake extends Entity implements MovingEntity {
 
         for (int i = 1; i < _parts.size() - 1; i++) {
             var part = _parts.get(i);
-            EntityManager.getGrid().markAsOccupied(part.position);
+            EntityManager.getGrid().markAsOccupied(part.position, Grid.Obstacle);
             var nextDirection = _parts.get(i + 1).direction;
             if (part.direction == nextDirection) {
                 SpriteManager.DrawSnakeSprite(g, color, SnakePart.Body, part.position, part.direction);
@@ -95,7 +108,7 @@ public class Snake extends Entity implements MovingEntity {
 
         var tail = _parts.getLast();
         SpriteManager.DrawSnakeSprite(g, color, SnakePart.Tail, tail.position, tail.direction);
-        EntityManager.getGrid().markAsOccupied(tail.position);
+        EntityManager.getGrid().markAsOccupied(tail.position, Grid.Obstacle);
     }
 
     private Image getTurnImage(Direction current, Direction next) {

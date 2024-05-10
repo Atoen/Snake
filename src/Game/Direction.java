@@ -1,6 +1,9 @@
 package Game;
 
+import Utils.SharedRandom;
+
 import java.awt.Point;
+import java.util.function.Predicate;
 
 public enum Direction {
     Up,
@@ -34,6 +37,29 @@ public enum Direction {
             case Left -> 270;
             case Right -> 90;
         };
+    }
+
+    public static Direction getRandomValidDirection(Predicate<Direction> predicate) {
+        var index = SharedRandom.nextInt(4);
+        for (var i = 0; i < 4; i++) {
+            var rotatedIndex = (index + i) % 4;
+            var direction = Direction.fromInt(rotatedIndex);
+
+            if (predicate.test(direction)) {
+                return direction;
+            }
+        }
+
+        return null;
+    }
+
+    public static Direction getDirectionRelativeTo(Point relativeTo, Point other) {
+        var dx = other.x - relativeTo.x;
+        var dy = other.y - relativeTo.y;
+
+        return Math.abs(dx) > Math.abs(dy)
+               ? (dx > 0 ? Direction.Right : Direction.Left)
+               : (dy > 0 ? Direction.Down : Direction.Up);
     }
 
     public double getRadians() {

@@ -34,18 +34,16 @@ public class EntityManager {
         _raRandomPointGenerator = new RandomPointGenerator(width, height);
     }
 
-    public static synchronized <T extends Entity> T findFirstEntity(Class<T> entityType) {
+    public static synchronized <T extends Entity> List<T> findEntitiesOfClass(Class<T> entityType) {
         return _entities.stream()
                 .filter(entityType::isInstance)
-                .findFirst()
                 .map(entityType::cast)
-                .orElse(null);
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    public static synchronized <T extends Entity> List<T> findAllEntities(Class<T> entityType) {
-        return _entities.stream().
-                filter(entityType::isInstance)
-                .map(entityType::cast)
+    public static synchronized <T> List<Entity> findEntitiesImplementing(Class<T> entityInterface) {
+        return _entities.stream()
+                .filter(entityInterface::isInstance)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -53,7 +51,8 @@ public class EntityManager {
         _grid.clear();
 
         for (var entity : _entities) {
-            _grid.markAsOccupied(entity.getPosition());
+            var type = entity instanceof ScoreEntity ? Grid.Eatable : Grid.Obstacle;
+            _grid.markAsOccupied(entity.getPosition(), type);
             entity.Draw(g);
         }
     }
@@ -75,8 +74,7 @@ public class EntityManager {
     public static synchronized <T extends Entity> T spawnEntity(Class<T> entityType, Object... args) {
         var point = _raRandomPointGenerator.pickRandomPointExcept(_entities);
 
-        var ctorArgs = args.length == 0 ? point : Stream.concat(Stream.of(point), Arrays.stream(args));
-        return createEntity(entityType, ctorArgs);
+        return createEntity(entityType, args.length == 0 ? new Object[]{point} : Stream.concat(Stream.of(point), Arrays.stream(args)).toArray());
     }
 
     public static synchronized <T extends Entity> T createEntity(Class<T> entityType, Object... args) {
