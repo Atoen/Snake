@@ -2,19 +2,20 @@ package Entities;
 
 import Game.Grid;
 import Game.RandomPointGenerator;
-import Game.SnakeColor;
 
 import java.awt.*;
 import java.lang.reflect.Constructor;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class EntityManager {
 
     private EntityManager() {}
 
-    private static final Map<Class<? extends Entity>, Constructor<? extends Entity>> _constructorCache = new HashMap<>();
+    private static final Map<Class<? extends Entity>, Constructor<?>> _constructorCache = new HashMap<>();
     private static final List<Entity> _entities = Collections.synchronizedList(new ArrayList<>());
 
     private static Grid _grid;
@@ -57,13 +58,6 @@ public class EntityManager {
         }
     }
 
-    public static synchronized Snake createSnake(Point position, SnakeColor color, int initialLength) {
-        var snake = new Snake(position, color, initialLength);
-        _entities.add(snake);
-
-        return snake;
-    }
-
     public static synchronized void spawnObstacles(int amount, int clearRadius) {
         var center = _grid.GetCenter();
 
@@ -78,25 +72,37 @@ public class EntityManager {
         }
     }
 
-    public static synchronized <T extends Entity> void spawnEntity(Class<T> entityType) {
+    public static synchronized <T extends Entity> T spawnEntity(Class<T> entityType, Object... args) {
         var point = _raRandomPointGenerator.pickRandomPointExcept(_entities);
 
-        createEntity(entityType, point);
+        var ctorArgs = args.length == 0 ? point : Stream.concat(Stream.of(point), Arrays.stream(args));
+        return createEntity(entityType, ctorArgs);
     }
 
-    public static synchronized <T extends Entity> void createEntity(Class<T> entityType, Point position) {
+    public static synchronized <T extends Entity> T createEntity(Class<T> entityType, Object... args) {
         try {
-            var constructor = _constructorCache.get(entityType);
-            if (constructor == null) {
-                constructor = entityType.getDeclaredConstructor(Point.class);
-                _constructorCache.put(entityType, constructor);
-            }
-
-            var entity = entityType.cast(constructor.newInstance(position));
+            var constructor = _constructorCache.computeIfAbsent(entityType, key -> getMatchingConstructor(key, args));
+            var entity = entityType.cast(constructor.newInstance(args));
             _entities.add(entity);
-
+            return entity;
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
+    }
+
+    private static Constructor<?> getMatchingConstructor(Class<?> entityType, Object... args) {
+        return Arrays.stream(entityType.getConstructors())
+                .filter(constructor -> isMatchingConstructor(constructor, args))
+                .findFirst()
+                .orElse(null);
+    }
+
+    private static boolean isMatchingConstructor(Constructor<?> constructor, Object... args) {
+        var paramTypes = constructor.getParameterTypes();
+
+        return paramTypes.length == args.length &&
+               IntStream.range(0, paramTypes.length)
+                   .allMatch(i -> paramTypes[i].isInstance(args[i]));
     }
 }

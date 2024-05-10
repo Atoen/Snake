@@ -28,8 +28,7 @@ public class SpriteManager {
             return image;
         }
 
-        var path = createPath(color, part);
-        image = loadImage(path);
+        image = loadImage(createSnakeSpritePath(color, part));
         partMap.put(part, image);
 
         return image;
@@ -46,7 +45,7 @@ public class SpriteManager {
         });
 
         for (var missingPart : partsToLoad) {
-            var loadedImage = loadImage(createPath(color, missingPart));
+            var loadedImage = loadImage(createSnakeSpritePath(color, missingPart));
             partMap.put(missingPart, loadedImage);
         }
 
@@ -136,7 +135,7 @@ public class SpriteManager {
         g2d.setTransform(startingTransform);
     }
 
-    private static String createPath(SnakeColor color, SnakePart part) {
+    private static String createSnakeSpritePath(SnakeColor color, SnakePart part) {
         return STR."src/sprites/snakes/\{color.getValue()}/\{part.getValue()}.png";
     }
 

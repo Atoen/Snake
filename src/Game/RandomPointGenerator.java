@@ -6,7 +6,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.BiPredicate;
 
 public class RandomPointGenerator {
 
@@ -28,13 +30,8 @@ public class RandomPointGenerator {
     }
 
     public Point pickRandomPointExcept(Rectangle rectangle) {
-        var point = new Point();
-        do {
-            point.x = _random.nextInt(_maxX);
-            point.y = _random.nextInt(_maxY);
-        } while (rectangle.contains(point));
-
-        return point;
+        return tryRandomizeWithConstraint(rectangle, (p, rect) -> !rect.contains(p))
+                .orElse(null);
     }
 
     public Point pickRandomPointExcept(Point point) {
@@ -42,60 +39,45 @@ public class RandomPointGenerator {
     }
 
     public Point pickRandomPointExcept(List<Entity> existingEntities) {
-        var point = new Point();
-        var collides = false;
 
-        do {
-            point.x = _random.nextInt(_maxX);
-            point.y = _random.nextInt(_maxY);
-
-            collides = collidesWithEntities(point, existingEntities);
-        } while (collides);
-
-        return point;
+        return tryRandomizeWithConstraint(existingEntities, this::doesntCollideWithEntities)
+                .orElseThrow();
     }
 
     public List<Point> pickRandomPointsExcept(int numberOfPoints, Rectangle rectangle) {
         var points = new ArrayList<Point>();
 
         for (var i = 0; i < numberOfPoints; i++) {
-            var attempt = 0;
-            var valid = true;
-
-            var point = new Point();
-            do {
-                if (attempt++ > MaxAttemptsPerPoint) {
-                    valid = false;
-                    break;
-                }
-
-                point.x = _random.nextInt(_maxX);
-                point.y = _random.nextInt(_maxY);
-            } while (pointExists(point, points) || rectangle.contains(point));
-
-            if (valid) {
-                points.add(point);
-            }
+            tryRandomizeWithConstraint(rectangle, (p, rect) -> !rect.contains(p) && !points.contains(p))
+                .ifPresent(points::add);
         }
 
         return points;
     }
 
-    private boolean pointExists(Point point, List<Point> points) {
-        for (Point p : points) {
-            if (p.equals(point)) {
-                return true;
-            }
-        }
-        return false;
+    private void randomizePoint(Point point) {
+        point.x = _random.nextInt(_maxX);
+        point.y = _random.nextInt(_maxY);
     }
 
-    private boolean collidesWithEntities(Point point, List<Entity> entities) {
-        for (Entity entity : entities) {
-            if (entity.isColliding(point)) {
-                return true;
+    private <TConstraint> Optional<Point> tryRandomizeWithConstraint(TConstraint constraint, BiPredicate<Point, TConstraint> predicate) {
+        var point = new Point();
+        for (var i = 0; i < MaxAttemptsPerPoint; i++) {
+            randomizePoint(point);
+            if (predicate.test(point, constraint)) {
+                return Optional.of(point);
             }
         }
-        return false;
+
+        return Optional.empty();
+    }
+
+    private boolean doesntCollideWithEntities(Point point, List<Entity> entities) {
+        for (Entity entity : entities) {
+            if (entity.isColliding(point)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -19,7 +19,7 @@ public class Snake extends Entity implements MovingEntity {
     public Direction direction = Direction.Up;
     public final SnakeColor color;
 
-    public Snake(Point point, SnakeColor color, int initialLength) {
+    public Snake(Point point, SnakeColor color, Integer initialLength) {
         super(point);
 
         this.color = color;
@@ -99,7 +99,6 @@ public class Snake extends Entity implements MovingEntity {
     }
 
     private Image getTurnImage(Direction current, Direction next) {
-        var sprites = SpriteManager.getSnakeSprites(color);
         var part = switch (current) {
             case Up -> next == Direction.Left ? SnakePart.Turn3 : SnakePart.Turn2;
             case Down -> next == Direction.Left ? SnakePart.Turn4 : SnakePart.Turn1;
@@ -107,7 +106,7 @@ public class Snake extends Entity implements MovingEntity {
             case Right -> next == Direction.Down ? SnakePart.Turn3 : SnakePart.Turn4;
         };
 
-        return sprites.get(part);
+        return SpriteManager.getSnakeSprite(color, part);
     }
 
     public void grow(int length) {

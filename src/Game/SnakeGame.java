@@ -6,12 +6,15 @@ import Threads.TimerThread;
 import java.util.ArrayList;
 
 public class SnakeGame {
-    private final ScoreUpdater _updater;
-    private final Snake _player;
 
+    private final ScoreUpdater _updater;
     private int _score;
 
     private final ArrayList<TimerThread> _threads = new ArrayList<>();
+
+    private final Snake _player;
+    private final ArrayList<AISnake> _aiPlayers = new ArrayList<>();
+
     public Direction inputDirection = Direction.Up;
 
     public SnakeGame(ScoreUpdater updater, Repainter repainter, int gridWidth, int gridHeight) {
@@ -21,14 +24,14 @@ public class SnakeGame {
         EntityManager.createGrid(gridWidth, gridHeight);
 
         var center = EntityManager.getGrid().GetCenter();
-        _player = EntityManager.createSnake(center, SnakeColor.Green, 3);
+        _player = EntityManager.createEntity(Snake.class, center, SnakeColor.Red, 3);
 
         setupEntities();
 
         _threads.add(new TimerThread(200, () -> {
             _player.direction = inputDirection;
 
-            var collides = checkCollisions();
+            var collides = checkCollisions(_player, true);
             if (collides) {
                 gameOver();
                 return;
@@ -98,9 +101,9 @@ public class SnakeGame {
         }
     }
 
-    public boolean checkCollisions() {
-        var position = _player.getPosition();
-        var nextPosition = _player.direction.translate(position);
+    private boolean checkCollisions(Snake snake, boolean isPlayer) {
+        var position = snake.getPosition();
+        var nextPosition = snake.direction.translate(position);
 
         if (nextPosition.x < 0 || nextPosition.x > EntityManager.getGrid().getWidth() ||
             nextPosition.y < 0 || nextPosition.y > EntityManager.getGrid().getHeight()) {
@@ -112,23 +115,24 @@ public class SnakeGame {
         var entitiesToRemove = new ArrayList<Entity>();
 
         for (var entity : EntityManager.getEntities()) {
-            if (entity.isColliding(nextPosition)) {
-                if (entity instanceof ScoreEntity scoreEntity) {
-                    _score += scoreEntity.getScore();
-                    _updater.updateScore(_score);
+            if (!entity.isColliding(nextPosition)) continue;
 
-                    entitiesToRemove.add(entity);
-                    _player.grow(scoreEntity.getGrowLength());
-                } else {
-                    return true;
-                }
+            if (!(entity instanceof ScoreEntity scoreEntity)) return true;
+            if (isPlayer) {
+                _score += scoreEntity.getScore();
+                _updater.updateScore(_score);
             }
+
+            entitiesToRemove.add(entity);
+            snake.grow(scoreEntity.getGrowLength());
         }
 
         EntityManager.getEntities().removeAll(entitiesToRemove);
-        entitiesToRemove.forEach(x -> {
-            if (x instanceof Fruit) EntityManager.spawnEntity(Fruit.class);
-        });
+        for (var entity : entitiesToRemove) {
+            if (entity instanceof Fruit) {
+                EntityManager.spawnEntity(Fruit.class);
+            }
+        }
 
         return false;
     }
