@@ -11,12 +11,13 @@ public class GameOverPanel extends JPanel {
     private BufferedImage backgroundImage;
 
     public GameOverPanel(MainFrameListener listener) {
+
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(800, 500));
 
         try {
             BufferedImage originalImage = ImageIO.read(new File("src/Sprites/skull.jpg"));
-            backgroundImage = resizeImage(originalImage, 800, 600);
+            backgroundImage = resizeImage(originalImage, 800, 500);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -30,6 +31,7 @@ public class GameOverPanel extends JPanel {
         _quitButton.addActionListener(e -> listener.onExit());
 
         JPanel buttonPanelGO = new JPanel();
+
         buttonPanelGO.setOpaque(false);
         buttonPanelGO.setLayout(new GridLayout(2, 1, 10, 10));
         buttonPanelGO.add(_restartButton);
@@ -75,5 +77,6 @@ public class GameOverPanel extends JPanel {
         g2d.dispose();
 
         return resizedImage;
+
     }
 }

@@ -17,11 +17,13 @@ public class StartPanel extends JPanel {
         _listener = listener;
 
         setLayout(new GridBagLayout());
+
         setPreferredSize(new Dimension(800, 500));
 
         try {
             BufferedImage originalImage = ImageIO.read(new File("src\\Sprites\\snake.png"));
-            backgroundImage = resizeImage(originalImage, 800, 600);
+            backgroundImage = resizeImage(originalImage, 800, 500);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -90,4 +92,13 @@ public class StartPanel extends JPanel {
 
         return resizedImage;
     }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+
 }
