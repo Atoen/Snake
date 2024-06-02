@@ -17,10 +17,13 @@ public class StartPanel extends JPanel {
         _listener = listener;
 
         setLayout(new GridBagLayout());
-        setPreferredSize(new Dimension(800, 450));
+
+        setPreferredSize(new Dimension(800, 500));
 
         try {
-            backgroundImage = ImageIO.read(new File("src\\Sprites\\snake.png"));
+            BufferedImage originalImage = ImageIO.read(new File("src\\Sprites\\snake.png"));
+            backgroundImage = resizeImage(originalImage, 800, 500);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -44,20 +47,50 @@ public class StartPanel extends JPanel {
             }
         });
 
-        // Create a panel to hold the buttons
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setOpaque(false); // Make the panel transparent
-        buttonPanel.setLayout(new GridLayout(2, 1, 10, 10)); // 10px vertical gap between buttons
+        buttonPanel.setOpaque(false);
+        buttonPanel.setLayout(new GridLayout(2, 1, 10, 10));
         buttonPanel.add(startButton);
         buttonPanel.add(exitButton);
 
-        // Use GridBagConstraints to center the buttonPanel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.CENTER;
 
         add(buttonPanel, gbc);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+
+    private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        double aspectRatio = (double) originalWidth / originalHeight;
+
+        int newWidth = targetWidth;
+        int newHeight = targetHeight;
+
+        if (aspectRatio > 1) {
+            newHeight = (int) (targetWidth / aspectRatio);
+        } else {
+            newWidth = (int) (targetHeight * aspectRatio);
+        }
+
+        Image scaledImage = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(scaledImage, 0, 0, null);
+        g2d.dispose();
+
+        return resizedImage;
     }
 
     @Override
