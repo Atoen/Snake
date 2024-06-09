@@ -10,31 +10,57 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The Snake class represents a snake entity in the game.
+ * It implements the MovingEntity interface.
+ */
 public class Snake extends Entity implements MovingEntity {
 
     private final List<Part> _parts = new ArrayList<>();
     private final Part _head;
-
     private int _targetLength;
 
+    /**
+     * The direction the snake is moving in. Default is Up.
+     */
     public Direction direction = Direction.Up;
+
+    /**
+     * Indicates if the snake is alive.
+     */
     public boolean isAlive = true;
+
+    /**
+     * The color of the snake.
+     */
     public final SnakeColor color;
 
+    /**
+     * Constructs a Snake at the specified position with the specified color and initial length.
+     *
+     * @param point         The initial position of the Snake.
+     * @param color         The color of the Snake.
+     * @param initialLength The initial length of the Snake.
+     */
     public Snake(Point point, SnakeColor color, Integer initialLength) {
         super(point);
-
         this.color = color;
         _targetLength = initialLength;
         _head = new Part(point);
         _parts.add(_head);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Point getPosition() {
         return _head.position;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void move() {
         _head.direction = direction;
@@ -59,6 +85,12 @@ public class Snake extends Entity implements MovingEntity {
         }
     }
 
+    /**
+     * Checks if the next direction is valid.
+     *
+     * @param nextDirection The next direction to check.
+     * @return True if the next direction is valid, otherwise false.
+     */
     public boolean isNextDirectionValid(Direction nextDirection) {
         return switch (nextDirection) {
             case Up -> direction != Direction.Down;
@@ -69,21 +101,31 @@ public class Snake extends Entity implements MovingEntity {
         };
     }
 
+    /**
+     * Sets the direction of the snake.
+     *
+     * @param nextDirection The new direction of the snake.
+     */
     public void setDirection(Direction nextDirection) {
         if (isNextDirectionValid(nextDirection)) {
             direction = nextDirection;
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isColliding(Point position) {
         for (var part : _parts) {
             if (part.position.equals(position)) return true;
         }
-
         return false;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void Draw(Graphics g) {
         EntityManager.getGrid().markAsOccupied(_head.position, Grid.Obstacle);
@@ -111,6 +153,13 @@ public class Snake extends Entity implements MovingEntity {
         EntityManager.getGrid().markAsOccupied(tail.position, Grid.Obstacle);
     }
 
+    /**
+     * Gets the image for a turn in the snake's body.
+     *
+     * @param current The current direction.
+     * @param next    The next direction.
+     * @return The image representing the turn.
+     */
     private Image getTurnImage(Direction current, Direction next) {
         var part = switch (current) {
             case Up -> next == Direction.Left ? SnakePart.Turn3 : SnakePart.Turn2;
@@ -122,10 +171,18 @@ public class Snake extends Entity implements MovingEntity {
         return SpriteManager.getSnakeSprite(color, part);
     }
 
+    /**
+     * Increases the target length of the snake.
+     *
+     * @param length The amount to increase the target length by.
+     */
     public void grow(int length) {
         _targetLength += length;
     }
 
+    /**
+     * Grows the snake by one part.
+     */
     private void growOne() {
         var tail = _parts.getLast();
         var newPosition = new Point(tail.position);
@@ -137,12 +194,27 @@ public class Snake extends Entity implements MovingEntity {
         _parts.add(newPart);
     }
 
+    /**
+     * The Part class represents a part of the snake's body.
+     */
     public static class Part {
+        /**
+         * The direction the part is facing. Default is Up.
+         */
+        public Direction direction = Direction.Up;
+
+        /**
+         * The position of the part.
+         */
+        public Point position;
+
+        /**
+         * Constructs a Part at the specified position.
+         *
+         * @param position The position of the Part.
+         */
         public Part(Point position) {
             this.position = position;
         }
-
-        public Direction direction = Direction.Up;
-        public Point position;
     }
 }

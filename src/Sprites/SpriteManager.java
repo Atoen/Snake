@@ -11,14 +11,23 @@ import java.util.*;
 
 import static UI.GameCanvas.CellSize;
 
+/**
+ * The SpriteManager class manages the loading and retrieval of various sprites used in the game.
+ */
 public class SpriteManager {
 
     private static final Map<SnakeColor, Map<SnakePart, Image>> _snakeSprites = new HashMap<>();
-
     private static Image[] _rockSprites;
     private static Image[] _fruitSprites;
     private static Image _frogSprite;
 
+    /**
+     * Retrieves the sprite image for the specified snake color and part.
+     *
+     * @param color The color of the snake.
+     * @param part  The part of the snake (head, body, tail).
+     * @return The Image of the snake part.
+     */
     public static Image getSnakeSprite(SnakeColor color, SnakePart part) {
         var partMap = _snakeSprites.computeIfAbsent(color, _ -> CreateEmptyPartMap());
         var image = partMap.get(part);
@@ -33,15 +42,24 @@ public class SpriteManager {
         return image;
     }
 
+    /**
+     * Creates an empty map for snake parts with null images.
+     *
+     * @return A map with SnakePart keys and null Image values.
+     */
     private static Map<SnakePart, Image> CreateEmptyPartMap() {
         var map = new HashMap<SnakePart, Image>();
         for (SnakePart part : SnakePart.values()) {
             map.put(part, null);
         }
-
         return map;
     }
 
+    /**
+     * Retrieves an array of rock sprites.
+     *
+     * @return An array of rock Images.
+     */
     public static Image[] getRockSprites() {
         if (_rockSprites != null) {
             return _rockSprites;
@@ -55,12 +73,22 @@ public class SpriteManager {
         return _rockSprites;
     }
 
+    /**
+     * Retrieves a random rock sprite.
+     *
+     * @return A random rock Image.
+     */
     public static Image getRandomRockSprite() {
         var sprites = getRockSprites();
         var index = SharedRandom.nextInt(sprites.length);
         return sprites[index];
     }
 
+    /**
+     * Retrieves an array of fruit sprites.
+     *
+     * @return An array of fruit Images.
+     */
     public static Image[] getFruitSprites() {
         if (_fruitSprites != null) {
             return _fruitSprites;
@@ -75,12 +103,22 @@ public class SpriteManager {
         return _fruitSprites;
     }
 
+    /**
+     * Retrieves a random fruit sprite.
+     *
+     * @return A random fruit Image.
+     */
     public static Image getRandomFruitSprite() {
         var sprites = getFruitSprites();
         var index = SharedRandom.nextInt(sprites.length);
         return sprites[index];
     }
 
+    /**
+     * Retrieves the frog sprite.
+     *
+     * @return The frog Image.
+     */
     public static Image getFrogSprite() {
         if (_frogSprite != null) {
             return _frogSprite;
@@ -90,15 +128,39 @@ public class SpriteManager {
         return _frogSprite;
     }
 
+    /**
+     * Draws the specified snake sprite at the given position with the specified direction.
+     *
+     * @param g         The Graphics context to draw on.
+     * @param color     The color of the snake.
+     * @param part      The part of the snake to draw.
+     * @param position  The position to draw the sprite.
+     * @param direction The direction the sprite should face.
+     */
     public static void DrawSnakeSprite(Graphics g, SnakeColor color, SnakePart part, Point position, Direction direction) {
         var sprite = getSnakeSprite(color, part);
         DrawSprite(g, sprite, position, direction);
     }
 
+    /**
+     * Draws the specified sprite at the given position with the default direction (up).
+     *
+     * @param g        The Graphics context to draw on.
+     * @param sprite   The Image to draw.
+     * @param position The position to draw the sprite.
+     */
     public static void DrawSprite(Graphics g, Image sprite, Point position) {
         DrawSprite(g, sprite, position, Direction.Up);
     }
 
+    /**
+     * Draws the specified sprite at the given position with the specified direction.
+     *
+     * @param g         The Graphics context to draw on.
+     * @param sprite    The Image to draw.
+     * @param position  The position to draw the sprite.
+     * @param direction The direction the sprite should face.
+     */
     public static void DrawSprite(Graphics g, Image sprite, Point position, Direction direction) {
         var g2d = (Graphics2D) g;
         var startingTransform = g2d.getTransform();
@@ -112,14 +174,27 @@ public class SpriteManager {
             g2d.rotate(direction.getRadians());
         }
 
-        g2d.drawImage(sprite, - CellSize / 2, - CellSize / 2, CellSize, CellSize, null);
+        g2d.drawImage(sprite, -CellSize / 2, -CellSize / 2, CellSize, CellSize, null);
         g2d.setTransform(startingTransform);
     }
 
+    /**
+     * Creates the file path for a snake sprite based on its color and part.
+     *
+     * @param color The color of the snake.
+     * @param part  The part of the snake.
+     * @return The file path as a String.
+     */
     private static String createSnakeSpritePath(SnakeColor color, SnakePart part) {
-        return STR."src/sprites/snakes/\{color.getValue()}/\{part.getValue()}.png";
+        return "src/sprites/snakes/" + color.getValue() + '/' + part.getValue() + ".png";
     }
 
+    /**
+     * Loads an image from the specified file path.
+     *
+     * @param path The file path to load the image from.
+     * @return The loaded Image, or null if loading failed.
+     */
     private static Image loadImage(String path) {
         try {
             return new ImageIcon(path).getImage();

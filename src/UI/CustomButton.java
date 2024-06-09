@@ -5,26 +5,31 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * The CustomButton class extends JButton to create custom-styled buttons.
+ * It provides functionality for buttons with rounded corners, hover effects,
+ * and pressed effects.
+ */
 public class CustomButton extends JButton {
-    private Color backgroundColor;
-    private Color hoverColor;
-    private Color pressedColor;
-    private Color textColor;
-    private int cornerRadius;
+    private final int cornerRadius;
 
+    /**
+     * Constructs a CustomButton with specified text and colors.
+     * @param text           the text to be displayed on the button
+     * @param backgroundColor the background color of the button
+     * @param hoverColor     the color of the button when the mouse hovers over it
+     * @param pressedColor   the color of the button when it is pressed
+     * @param textColor      the color of the text on the button
+     */
     public CustomButton(String text, Color backgroundColor, Color hoverColor, Color pressedColor, Color textColor) {
         super(text);
-//        backgroundColor = new Color(70, 130, 180); // Steel Blue
-//        hoverColor = new Color(100, 149, 237); // Cornflower Blue
-//        pressedColor = new Color(65, 105, 225); // Royal Blue
-//        textColor = Color.WHITE;
         cornerRadius = 15;
 
         setContentAreaFilled(false);
         setFocusPainted(false);
         setBorderPainted(false);
         setForeground(textColor);
-        setBackground(backgroundColor); // Initial background color
+        setBackground(backgroundColor);
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -53,6 +58,10 @@ public class CustomButton extends JButton {
         });
     }
 
+    /**
+     * Overrides the paintComponent method to draw the rounded rectangle background.
+     * @param g the Graphics context in which to paint
+     */
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
@@ -63,8 +72,13 @@ public class CustomButton extends JButton {
         g2.dispose();
     }
 
+    /**
+     * Overrides the setBackground method to ensure proper repainting.
+     * @param bg the background color to be set
+     */
     @Override
     public void setBackground(Color bg) {
         super.setBackground(bg);
     }
 }
+

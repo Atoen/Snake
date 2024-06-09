@@ -7,11 +7,18 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * The GameOverPanel class represents the panel displayed when the game is over.
+ * It extends JPanel and provides buttons for restarting the game or quitting.
+ */
 public class GameOverPanel extends JPanel {
     private BufferedImage backgroundImage;
 
+    /**
+     * Constructs a new GameOverPanel with the specified listener for button actions.
+     * @param listener the listener for button actions
+     */
     public GameOverPanel(MainFrameListener listener) {
-
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(800, 500));
 
@@ -24,14 +31,13 @@ public class GameOverPanel extends JPanel {
 
         var _restartButton = new CustomButton("Restart", Color.lightGray, Color.darkGray, Color.GREEN, Color.BLACK);
         _restartButton.setPreferredSize(new Dimension(180, 60));
-        _restartButton.addActionListener(e -> listener.onRestartGame());
+        _restartButton.addActionListener(_ -> listener.onRestartGame());
 
         var _quitButton = new CustomButton("Quit", Color.lightGray, Color.darkGray, Color.red, Color.BLACK);
         _quitButton.setPreferredSize(new Dimension(180, 60));
-        _quitButton.addActionListener(e -> listener.onExit());
+        _quitButton.addActionListener(_ -> listener.onExit());
 
         JPanel buttonPanelGO = new JPanel();
-
         buttonPanelGO.setOpaque(false);
         buttonPanelGO.setLayout(new GridLayout(2, 1, 10, 10));
         buttonPanelGO.add(_restartButton);
@@ -45,6 +51,10 @@ public class GameOverPanel extends JPanel {
         add(buttonPanelGO, gbc);
     }
 
+    /**
+     * Overrides the paintComponent method to paint the background image.
+     * @param g the Graphics context in which to paint
+     */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -55,6 +65,13 @@ public class GameOverPanel extends JPanel {
         }
     }
 
+    /**
+     * Resizes the given image to the specified dimensions while maintaining aspect ratio.
+     * @param originalImage the original image to be resized
+     * @param targetWidth   the target width of the resized image
+     * @param targetHeight  the target height of the resized image
+     * @return the resized image
+     */
     private BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
         int originalWidth = originalImage.getWidth();
         int originalHeight = originalImage.getHeight();
@@ -77,6 +94,6 @@ public class GameOverPanel extends JPanel {
         g2d.dispose();
 
         return resizedImage;
-
     }
 }
+
